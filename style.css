@@ -100,7 +100,7 @@ header {
 }
 
 .station-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   fill: #222;
   pointer-events: none;

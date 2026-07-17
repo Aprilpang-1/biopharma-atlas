@@ -1,30 +1,30 @@
-// Phase 5: Layer 3 (concept + 2 buttons) and Layer 4 (drugs / pros-cons) drill-down,
-// plus breadcrumb navigation. Builds on Phase 4's subway map (Layer 1 + 2).
+// Phase 5b: fixes station label overlap by widening spacing and wrapping
+// long modality names onto two lines.
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 // Hand-tuned layout - station positions are presentational, not content,
 // so they live here rather than in content.json.
 const LAYOUT = {
-  viewBox: "0 0 1000 460",
+  viewBox: "0 0 1300 460",
   linePaths: {
-    oncology: "80,150 190,150 220,250 250,150 360,150 500,150 640,150 780,150 920,150",
-    immunology: "140,350 220,250 300,350 380,350 520,350"
+    oncology: "60,150 190,150 220,250 250,150 400,150 580,150 780,150 1000,150 1220,150",
+    immunology: "140,350 220,250 340,350 420,350 600,350"
   },
   areaLabelPos: {
-    oncology: { x: 80, y: 120 },
+    oncology: { x: 60, y: 120 },
     immunology: { x: 140, y: 400 }
   },
   stationPos: {
-    "targeted-mab": { x: 80, y: 150 },
+    "targeted-mab": { x: 60, y: 150 },
     "adc": { x: 220, y: 250 },
-    "bispecific-ab": { x: 360, y: 150 },
-    "cell-therapy": { x: 500, y: 150 },
-    "small-molecule": { x: 640, y: 150 },
-    "checkpoint-inhibitor": { x: 780, y: 150 },
-    "radioligand-therapy": { x: 920, y: 150 },
-    "anti-cytokine-mab": { x: 380, y: 350 },
-    "jak-inhibitor": { x: 520, y: 350 }
+    "bispecific-ab": { x: 400, y: 150 },
+    "cell-therapy": { x: 580, y: 150 },
+    "small-molecule": { x: 780, y: 150 },
+    "checkpoint-inhibitor": { x: 1000, y: 150 },
+    "radioligand-therapy": { x: 1220, y: 150 },
+    "anti-cytokine-mab": { x: 420, y: 350 },
+    "jak-inhibitor": { x: 600, y: 350 }
   }
 };
 
@@ -62,6 +62,26 @@ function svgEl(tag, attrs) {
     el.setAttribute(k, attrs[k]);
   });
   return el;
+}
+
+// Splits a long station name into up to two lines so labels don't collide
+// horizontally. Short names stay on one line.
+function wrapLabel(name) {
+  if (name.length <= 14) return [name];
+
+  var parenIdx = name.indexOf(" (");
+  if (parenIdx !== -1) {
+    return [name.slice(0, parenIdx), name.slice(parenIdx + 1)];
+  }
+
+  var mid = Math.floor(name.length / 2);
+  var splitAt = -1;
+  for (var d = 0; d < name.length; d++) {
+    if (name.charAt(mid - d) === " ") { splitAt = mid - d; break; }
+    if (name.charAt(mid + d) === " ") { splitAt = mid + d; break; }
+  }
+  if (splitAt === -1) return [name];
+  return [name.slice(0, splitAt), name.slice(splitAt + 1)];
 }
 
 function buildMap(app) {
@@ -122,15 +142,19 @@ function buildMap(app) {
     });
     svg.appendChild(dot);
 
-    var label = svgEl("text", {
-      x: pos.x,
-      y: pos.y - 16,
-      "text-anchor": "middle",
-      class: "station-label hidden-station",
-      "data-station-label": mod.id
+    var lines = wrapLabel(mod.name);
+    var baseY = pos.y - (lines.length > 1 ? 30 : 16);
+    lines.forEach(function (lineText, i) {
+      var label = svgEl("text", {
+        x: pos.x,
+        y: baseY + i * 15,
+        "text-anchor": "middle",
+        class: "station-label hidden-station",
+        "data-station-label": mod.id
+      });
+      label.textContent = lineText;
+      svg.appendChild(label);
     });
-    label.textContent = mod.name;
-    svg.appendChild(label);
 
     if (mod.stubOnly) {
       var sub = svgEl("text", {
@@ -195,13 +219,14 @@ function applyFocusState() {
   state.data.modalities.forEach(function (mod) {
     var belongsToSelected = selectedArea && mod.areas.indexOf(selectedArea) !== -1;
     var dot = svg.querySelector('[data-station="' + mod.id + '"]');
-    var label = svg.querySelector('[data-station-label="' + mod.id + '"]');
+    var labels = svg.querySelectorAll('[data-station-label="' + mod.id + '"]');
     var sub = svg.querySelector('[data-station-sublabel="' + mod.id + '"]');
 
-    [dot, label, sub].forEach(function (el) {
-      if (!el) return;
+    if (dot) dot.classList.toggle("hidden-station", !belongsToSelected);
+    labels.forEach(function (el) {
       el.classList.toggle("hidden-station", !belongsToSelected);
     });
+    if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);
 
     if (dot) dot.classList.toggle("selected", mod.id === state.selectedStation);
   });

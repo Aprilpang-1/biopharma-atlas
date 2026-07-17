@@ -3,18 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Biopharma Investment Atlas — Skeleton</title>
+  <title>Biopharma Investment Atlas</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>Biopharma Investment Atlas</h1>
-    <p class="subtitle">Phase 3 skeleton — data loaded from content.json, no map/styling yet</p>
+    <p class="subtitle" id="subtitle">Phase 4 — tap a line to explore its modalities</p>
   </header>
 
+  <div id="toolbar">
+    <button id="back-btn" class="hidden">&larr; All lines</button>
+  </div>
+
   <main id="app">
-    <p id="status">Loading content.json…</p>
+    <p id="status">Loading content.json&hellip;</p>
   </main>
+
+  <div id="detail-panel" class="hidden"></div>
 
   <script src="app.js"></script>
 </body>

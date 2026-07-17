@@ -1,6 +1,6 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
   color: #222;
@@ -8,7 +8,7 @@ body {
 }
 
 header {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .subtitle {
@@ -16,46 +16,134 @@ header {
   font-size: 0.9rem;
 }
 
-.area-block {
-  margin-bottom: 2rem;
-  border-left: 4px solid var(--area-color, #999);
-  padding-left: 1rem;
+#toolbar {
+  min-height: 2.2rem;
+  margin-bottom: 0.5rem;
 }
 
-.area-block h2 {
-  margin-bottom: 0.25rem;
+#back-btn {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
 }
 
-.modality-list {
-  list-style: none;
-  padding: 0;
+#back-btn:hover {
+  background: #f4f4f4;
 }
 
-.modality-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.modality-name {
-  font-weight: 600;
-}
-
-.interchange-tag {
-  font-size: 0.75rem;
-  color: #fff;
-  background: #333;
-  border-radius: 4px;
-  padding: 0.1rem 0.4rem;
-  margin-left: 0.5rem;
-}
-
-.stub-tag {
-  font-size: 0.75rem;
-  color: #666;
-  font-style: italic;
-  margin-left: 0.5rem;
+.hidden {
+  display: none !important;
 }
 
 #status {
   color: #666;
+}
+
+#subway-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.line-path {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: stroke 0.3s ease, opacity 0.3s ease;
+}
+
+.line-path.faded {
+  stroke: #ccc !important;
+  opacity: 0.6;
+}
+
+.area-label {
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: fill 0.3s ease, opacity 0.3s ease;
+}
+
+.area-label.faded {
+  fill: #bbb !important;
+  opacity: 0.7;
+}
+
+.station-dot {
+  cursor: pointer;
+  transition: opacity 0.3s ease, r 0.15s ease;
+}
+
+.station-dot.hidden-station {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.station-dot:hover {
+  r: 9;
+}
+
+.station-dot.selected {
+  stroke: #222;
+  stroke-width: 3;
+}
+
+.interchange-dot {
+  fill: #fff;
+  stroke: #222;
+  stroke-width: 4;
+}
+
+.station-label {
+  font-size: 13px;
+  font-weight: 600;
+  fill: #222;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.station-label.hidden-station {
+  opacity: 0;
+}
+
+.station-sublabel {
+  font-size: 10px;
+  font-style: italic;
+  fill: #888;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.station-sublabel.hidden-station {
+  opacity: 0;
+}
+
+#detail-panel {
+  margin-top: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  background: #fafafa;
+}
+
+#detail-panel h3 {
+  margin: 0 0 0.4rem;
+}
+
+#detail-panel p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+#detail-panel .placeholder-note {
+  font-size: 0.8rem;
+  color: #999;
+  font-style: italic;
+  margin-top: 0.6rem;
 }

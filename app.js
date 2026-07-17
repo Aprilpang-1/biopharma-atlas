@@ -1,5 +1,39 @@
-// Phase 3 skeleton: just prove content.json loads and the data model works.
-// No subway map rendering yet (that's Phase 4) — this is a flat, unstyled list.
+// Phase 4: subway map renderer — Layer 1 (overview) + Layer 2 (station focus).
+// Layer 3/4 (concept + drugs / pros-cons) are stubbed here; full build is Phase 5.
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Hand-tuned layout — station positions are presentational, not content,
+// so they live here rather than in content.json (real subway maps aren't
+// geographically accurate either — clarity beats precision).
+const LAYOUT = {
+  viewBox: "0 0 1000 460",
+  linePaths: {
+    oncology: "80,150 190,150 220,250 250,150 360,150 500,150 640,150 780,150 920,150",
+    immunology: "140,350 220,250 300,350 380,350 520,350",
+  },
+  areaLabelPos: {
+    oncology: { x: 80, y: 120 },
+    immunology: { x: 140, y: 400 },
+  },
+  stationPos: {
+    "targeted-mab": { x: 80, y: 150 },
+    "adc": { x: 220, y: 250 },
+    "bispecific-ab": { x: 360, y: 150 },
+    "cell-therapy": { x: 500, y: 150 },
+    "small-molecule": { x: 640, y: 150 },
+    "checkpoint-inhibitor": { x: 780, y: 150 },
+    "radioligand-therapy": { x: 920, y: 150 },
+    "anti-cytokine-mab": { x: 380, y: 350 },
+    "jak-inhibitor": { x: 520, y: 350 },
+  },
+};
+
+let state = {
+  data: null,
+  selectedArea: null, // null = overview
+  selectedStation: null,
+};
 
 async function loadAtlas() {
   const statusEl = document.getElementById("status");
@@ -8,95 +42,174 @@ async function loadAtlas() {
   try {
     const res = await fetch("data/content.json");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    state.data = await res.json();
 
     statusEl.remove();
-    render(data, app);
+    buildMap(app);
+    wireToolbar();
   } catch (err) {
     statusEl.textContent = `Failed to load content.json: ${err.message}`;
     statusEl.style.color = "crimson";
   }
 }
 
-function render(data, app) {
-  const { areas, modalities, exampleDrugs } = data;
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
 
-  const drugById = Object.fromEntries(exampleDrugs.map((d) => [d.id, d]));
+function buildMap(app) {
+  const svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
-  areas.forEach((area) => {
-    const areaModalities = modalities.filter((m) => m.areas.includes(area.id));
+  state.data.areas.forEach((area) => {
+    const path = LAYOUT.linePaths[area.id];
+    if (!path) return;
+    const line = svgEl("polyline", {
+      points: path,
+      class: "line-path",
+      stroke: area.color,
+      "data-area": area.id,
+    });
+    line.addEventListener("click", () => selectArea(area.id));
+    svg.appendChild(line);
+  });
 
-    const block = document.createElement("section");
-    block.className = "area-block";
-    block.style.setProperty("--area-color", area.color);
+  state.data.areas.forEach((area) => {
+    const pos = LAYOUT.areaLabelPos[area.id];
+    if (!pos) return;
+    const label = svgEl("text", {
+      x: pos.x,
+      y: pos.y,
+      class: "area-label",
+      fill: area.color,
+      "data-area": area.id,
+    });
+    label.textContent = area.name;
+    label.addEventListener("click", () => selectArea(area.id));
+    svg.appendChild(label);
+  });
 
-    const heading = document.createElement("h2");
-    heading.textContent = area.name;
-    heading.style.color = area.color;
-    block.appendChild(heading);
+  state.data.modalities.forEach((mod) => {
+    const pos = LAYOUT.stationPos[mod.id];
+    if (!pos) return;
+    const isInterchange = mod.areas.length > 1;
+    const primaryColor = state.data.areas.find((a) => a.id === mod.areas[0])?.color || "#333";
 
-    const count = document.createElement("p");
-    count.textContent = `${areaModalities.length} modalities`;
-    count.style.fontSize = "0.85rem";
-    count.style.color = "#666";
-    block.appendChild(count);
+    const dot = svgEl("circle", {
+      cx: pos.x,
+      cy: pos.y,
+      r: isInterchange ? 10 : 7,
+      class: "station-dot hidden-station" + (isInterchange ? " interchange-dot" : ""),
+      fill: isInterchange ? "#fff" : primaryColor,
+      "data-station": mod.id,
+    });
+    dot.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectStation(mod.id);
+    });
+    svg.appendChild(dot);
 
-    const list = document.createElement("ul");
-    list.className = "modality-list";
+    const label = svgEl("text", {
+      x: pos.x,
+      y: pos.y - 16,
+      "text-anchor": "middle",
+      class: "station-label hidden-station",
+      "data-station-label": mod.id,
+    });
+    label.textContent = mod.name;
+    svg.appendChild(label);
 
-    areaModalities.forEach((mod) => {
-      const li = document.createElement("li");
+    if (mod.stubOnly) {
+      const sub = svgEl("text", {
+        x: pos.x,
+        y: pos.y + 24,
+        "text-anchor": "middle",
+        class: "station-sublabel hidden-station",
+        "data-station-sublabel": mod.id,
+      });
+      sub.textContent = "stub — content pending";
+      svg.appendChild(sub);
+    }
+  });
 
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "modality-name";
-      nameSpan.textContent = mod.name;
-      li.appendChild(nameSpan);
+  app.innerHTML = "";
+  app.appendChild(svg);
+}
 
-      if (mod.areas.length > 1) {
-        const tag = document.createElement("span");
-        tag.className = "interchange-tag";
-        tag.textContent = "shared interchange";
-        li.appendChild(tag);
-      }
+function selectArea(areaId) {
+  state.selectedArea = areaId;
+  state.selectedStation = null;
+  applyFocusState();
+  document.getElementById("back-btn").classList.remove("hidden");
+  document.getElementById("detail-panel").classList.add("hidden");
+  document.getElementById("subtitle").textContent =
+    `Viewing the ${state.data.areas.find((a) => a.id === areaId).name} line — tap a station`;
+}
 
-      if (mod.stubOnly) {
-        const tag = document.createElement("span");
-        tag.className = "stub-tag";
-        tag.textContent = "stub — content pending";
-        li.appendChild(tag);
-      }
+function backToOverview() {
+  state.selectedArea = null;
+  state.selectedStation = null;
+  applyFocusState();
+  document.getElementById("back-btn").classList.add("hidden");
+  document.getElementById("detail-panel").classList.add("hidden");
+  document.getElementById("subtitle").textContent = "Tap a line to explore its modalities";
+}
 
-      if (mod.concept) {
-        const concept = document.createElement("p");
-        concept.textContent = mod.concept;
-        concept.style.fontSize = "0.85rem";
-        concept.style.color = "#444";
-        concept.style.margin = "0.25rem 0 0";
-        li.appendChild(concept);
-      }
+function applyFocusState() {
+  const svg = document.getElementById("subway-map");
+  const { selectedArea } = state;
 
-      if (mod.exampleDrugIds && mod.exampleDrugIds.length) {
-        const drugs = document.createElement("p");
-        drugs.style.fontSize = "0.8rem";
-        drugs.style.color = "#888";
-        drugs.style.margin = "0.25rem 0 0";
-        drugs.textContent =
-          "Example drugs: " +
-          mod.exampleDrugIds
-            .map((id) => {
-              const d = drugById[id];
-              return d ? `${d.name} (${d.company}, ${d.year})` : id;
-            })
-            .join(" · ");
-        li.appendChild(drugs);
-      }
+  svg.querySelectorAll(".line-path").forEach((el) => {
+    const isActive = !selectedArea || el.dataset.area === selectedArea;
+    el.classList.toggle("faded", !isActive);
+  });
 
-      list.appendChild(li);
+  svg.querySelectorAll(".area-label").forEach((el) => {
+    const isActive = !selectedArea || el.dataset.area === selectedArea;
+    el.classList.toggle("faded", !isActive);
+  });
+
+  state.data.modalities.forEach((mod) => {
+    const belongsToSelected = selectedArea && mod.areas.includes(selectedArea);
+    const dot = svg.querySelector(`[data-station="${mod.id}"]`);
+    const label = svg.querySelector(`[data-station-label="${mod.id}"]`);
+    const sub = svg.querySelector(`[data-station-sublabel="${mod.id}"]`);
+
+    [dot, label, sub].forEach((el) => {
+      if (!el) return;
+      el.classList.toggle("hidden-station", !belongsToSelected);
     });
 
-    block.appendChild(list);
-    app.appendChild(block);
+    if (dot) dot.classList.toggle("selected", mod.id === state.selectedStation);
   });
+}
+
+function selectStation(modId) {
+  state.selectedStation = modId;
+  applyFocusState();
+
+  const mod = state.data.modalities.find((m) => m.id === modId);
+  const panel = document.getElementById("detail-panel");
+  panel.classList.remove("hidden");
+
+  if (mod.stubOnly) {
+    panel.innerHTML = `
+      <h3>${mod.name}</h3>
+      <p class="placeholder-note">Stub station — full content not yet authored.</p>
+    `;
+    return;
+  }
+
+  panel.innerHTML = `
+    <h3>${mod.name}</h3>
+    <p>${mod.concept}</p>
+    <p class="placeholder-note">Full Layer 3/4 view (concept + example drugs / pros-cons buttons) is built in Phase 5. This is a preview of the data only.</p>
+  `;
+}
+
+function wireToolbar() {
+  document.getElementById("back-btn").addEventListener("click", backToOverview);
 }
 
 loadAtlas();

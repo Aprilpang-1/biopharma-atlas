@@ -1,0 +1,130 @@
+{
+  "_schemaNotes": "Phase 2: all 7 Oncology modalities fully authored (concept, schematicParts, pros, cons, verdict, exampleDrugIds). schematicParts are text labels only — accurate illustrated schematics are a Phase 4/5 deliverable, not part of this content pass. Immunology stubs remain name-only per Section 8 of the locked spec.",
+
+  "areas": [
+    { "id": "oncology", "name": "Oncology", "color": "#E63946" },
+    { "id": "immunology", "name": "Immunology", "color": "#457B9D" }
+  ],
+
+  "modalities": [
+    {
+      "id": "adc",
+      "name": "ADC (Antibody-Drug Conjugate)",
+      "areas": ["oncology", "immunology"],
+      "concept": "An antibody guides a toxic drug directly to cancer cells via a chemical linker — like a guided missile.",
+      "schematicParts": ["antibody", "linker", "drug"],
+      "pros": ["Targeted, spares healthy tissue", "Very potent payloads", "Proven blockbusters"],
+      "cons": ["Complex/costly manufacturing", "Off-target toxicity", "Resistance"],
+      "verdict": "High value, high execution risk",
+      "exampleDrugIds": ["adcetris", "kadcyla", "enhertu"]
+    },
+    {
+      "id": "targeted-mab",
+      "name": "Targeted mAb",
+      "areas": ["oncology"],
+      "concept": "A lab-made antibody that recognizes one specific protein on cancer cells and either blocks its growth signal directly or flags the cell for the immune system to destroy — oncology's original precision therapy, dating to the late 1990s.",
+      "schematicParts": ["antibody", "target antigen"],
+      "pros": ["Highly selective for tumor cells, spares healthy tissue", "Better tolerated than conventional chemotherapy", "Can work through multiple mechanisms at once"],
+      "cons": ["Only works if the tumor expresses the target antigen", "Large molecules can't reach some tumor sites (e.g. brain)", "Resistance can develop over time"],
+      "verdict": "The foundational modality — proven and safe, but often needs a combination partner for full effect.",
+      "exampleDrugIds": ["rituximab", "trastuzumab"]
+    },
+    {
+      "id": "bispecific-ab",
+      "name": "Bispecific Antibody",
+      "areas": ["oncology"],
+      "concept": "An antibody engineered to grab two different targets at once — a cancer cell on one arm, a T-cell on the other — physically dragging the immune cell in to attack, with no need to engineer the patient's own cells.",
+      "schematicParts": ["arm 1: tumor antigen", "arm 2: T-cell (CD3)"],
+      "pros": ["Off-the-shelf — no need to harvest/engineer patient cells like CAR-T", "Can achieve CAR-T-like response rates in blood cancers", "Fast-growing class: multiple approvals since 2014"],
+      "cons": ["Cytokine release syndrome and neurotoxicity risk, similar to CAR-T", "Short half-life often requires frequent or continuous infusion", "Efficacy in solid tumors still limited"],
+      "verdict": "A cheaper, more scalable alternative to cell therapy — a fast-growing modality class.",
+      "exampleDrugIds": ["blinatumomab", "mosunetuzumab"]
+    },
+    {
+      "id": "cell-therapy",
+      "name": "Cell Therapy (CAR-T)",
+      "areas": ["oncology"],
+      "concept": "A patient's own T-cells are extracted, genetically re-engineered to carry a receptor that recognizes a cancer marker, then infused back in as a living drug that can multiply and persist in the body.",
+      "schematicParts": ["patient T-cell", "chimeric antigen receptor (CAR)", "target antigen"],
+      "pros": ["Deep, durable remissions in relapsed/refractory blood cancers", "Living drug — can persist for years, guarding against relapse", "Six approved products since 2017 for hematologic malignancies"],
+      "cons": ["Serious toxicities: cytokine release syndrome, neurotoxicity", "Very expensive ($300K–$475K per treatment)", "Complex, slow, patient-specific manufacturing; limited solid-tumor success so far"],
+      "verdict": "The most powerful but most operationally demanding modality — reserved for cases nothing else can touch.",
+      "exampleDrugIds": ["kymriah", "yescarta"]
+    },
+    {
+      "id": "small-molecule",
+      "name": "Small Molecule (Kinase Inhibitor)",
+      "areas": ["oncology"],
+      "concept": "A small chemical compound taken as a pill that fits into the active site of a mutated enzyme (kinase) driving tumor growth, switching it off — the way a key jams a lock.",
+      "schematicParts": ["small molecule drug", "kinase ATP-binding pocket"],
+      "pros": ["Oral dosing — convenient, no infusion needed", "High efficacy with relatively mild side effects in the right tumor type", "Cheap to manufacture relative to biologics"],
+      "cons": ["Resistance mutations commonly emerge over time", "Only effective when the tumor is 'addicted' to that specific kinase", "Off-target binding can cause unexpected toxicities"],
+      "verdict": "The workhorse modality — simple to deliver, but resistance is the constant fight.",
+      "exampleDrugIds": ["imatinib"]
+    },
+    {
+      "id": "checkpoint-inhibitor",
+      "name": "Immune Checkpoint Inhibitor",
+      "areas": ["oncology"],
+      "concept": "An antibody that blocks the 'brakes' cancer cells use to hide from the immune system (like PD-1/PD-L1 or CTLA-4), releasing the immune system to recognize and attack the tumor.",
+      "schematicParts": ["checkpoint antibody", "PD-1/PD-L1 or CTLA-4 axis"],
+      "pros": ["Durable, sometimes years-long responses in a subset of patients", "Works across many tumor types, not just one", "Response can persist even after stopping treatment"],
+      "cons": ["Only a minority of patients respond", "Immune-related adverse events can affect any organ", "Response patterns can be unpredictable (pseudo-progression before shrinkage)"],
+      "verdict": "Transformed oncology by unleashing the immune system — but who responds is still hard to predict.",
+      "exampleDrugIds": ["keytruda", "opdivo", "yervoy"]
+    },
+    {
+      "id": "radioligand-therapy",
+      "name": "Radioligand Therapy",
+      "areas": ["oncology"],
+      "concept": "A tumor-seeking molecule is chemically bonded to a radioactive isotope; once it locks onto the target on cancer cells, it delivers a localized dose of radiation that damages the cell from within.",
+      "schematicParts": ["targeting ligand", "radioactive isotope payload"],
+      "pros": ["Delivers radiation directly to tumor cells, sparing healthy tissue", "Proven survival benefit in prostate cancer and neuroendocrine tumors", "Pairs with imaging for a 'see it, treat it' theranostic approach"],
+      "cons": ["Requires specialized nuclear medicine infrastructure and handling", "Global supply and workforce shortages limit access", "Still carries meaningful Grade 3+ adverse event rates"],
+      "verdict": "A precision-radiation modality with real survival data — bottlenecked by infrastructure, not science.",
+      "exampleDrugIds": ["pluvicto", "lutathera"]
+    },
+    {
+      "id": "anti-cytokine-mab",
+      "name": "Anti-Cytokine mAb",
+      "areas": ["immunology"],
+      "concept": null,
+      "schematicParts": [],
+      "pros": [],
+      "cons": [],
+      "verdict": null,
+      "exampleDrugIds": [],
+      "stubOnly": true
+    },
+    {
+      "id": "jak-inhibitor",
+      "name": "JAK Inhibitor",
+      "areas": ["immunology"],
+      "concept": null,
+      "schematicParts": [],
+      "pros": [],
+      "cons": [],
+      "verdict": null,
+      "exampleDrugIds": [],
+      "stubOnly": true
+    }
+  ],
+
+  "exampleDrugs": [
+    { "id": "adcetris", "name": "Adcetris", "company": "Seagen", "year": 2011 },
+    { "id": "kadcyla", "name": "Kadcyla", "company": "Genentech", "year": 2013 },
+    { "id": "enhertu", "name": "Enhertu", "company": "Daiichi Sankyo", "year": 2019 },
+    { "id": "rituximab", "name": "Rituximab (Rituxan)", "company": "Genentech/Biogen", "year": 1997 },
+    { "id": "trastuzumab", "name": "Trastuzumab (Herceptin)", "company": "Genentech", "year": 1998 },
+    { "id": "blinatumomab", "name": "Blinatumomab (Blincyto)", "company": "Amgen", "year": 2014 },
+    { "id": "mosunetuzumab", "name": "Mosunetuzumab (Lunsumio)", "company": "Genentech", "year": 2022 },
+    { "id": "kymriah", "name": "Tisagenlecleucel (Kymriah)", "company": "Novartis", "year": 2017 },
+    { "id": "yescarta", "name": "Axicabtagene ciloleucel (Yescarta)", "company": "Kite/Gilead", "year": 2017 },
+    { "id": "imatinib", "name": "Imatinib (Gleevec)", "company": "Novartis", "year": 2001 },
+    { "id": "keytruda", "name": "Keytruda", "company": "Merck", "year": 2014 },
+    { "id": "opdivo", "name": "Opdivo", "company": "BMS", "year": 2014 },
+    { "id": "yervoy", "name": "Yervoy", "company": "BMS", "year": 2011 },
+    { "id": "pluvicto", "name": "Pluvicto", "company": "Novartis", "year": 2022 },
+    { "id": "lutathera", "name": "Lutathera", "company": "Novartis", "year": 2018 }
+  ]
+}

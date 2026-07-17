@@ -1,20 +1,19 @@
-// Phase 4: subway map renderer — Layer 1 (overview) + Layer 2 (station focus).
-// Layer 3/4 (concept + drugs / pros-cons) are stubbed here; full build is Phase 5.
+// Phase 5: Layer 3 (concept + 2 buttons) and Layer 4 (drugs / pros-cons) drill-down,
+// plus breadcrumb navigation. Builds on Phase 4's subway map (Layer 1 + 2).
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// Hand-tuned layout — station positions are presentational, not content,
-// so they live here rather than in content.json (real subway maps aren't
-// geographically accurate either — clarity beats precision).
+// Hand-tuned layout - station positions are presentational, not content,
+// so they live here rather than in content.json.
 const LAYOUT = {
   viewBox: "0 0 1000 460",
   linePaths: {
     oncology: "80,150 190,150 220,250 250,150 360,150 500,150 640,150 780,150 920,150",
-    immunology: "140,350 220,250 300,350 380,350 520,350",
+    immunology: "140,350 220,250 300,350 380,350 520,350"
   },
   areaLabelPos: {
     oncology: { x: 80, y: 120 },
-    immunology: { x: 140, y: 400 },
+    immunology: { x: 140, y: 400 }
   },
   stationPos: {
     "targeted-mab": { x: 80, y: 150 },
@@ -25,110 +24,123 @@ const LAYOUT = {
     "checkpoint-inhibitor": { x: 780, y: 150 },
     "radioligand-therapy": { x: 920, y: 150 },
     "anti-cytokine-mab": { x: 380, y: 350 },
-    "jak-inhibitor": { x: 520, y: 350 },
-  },
-};
-
-let state = {
-  data: null,
-  selectedArea: null, // null = overview
-  selectedStation: null,
-};
-
-async function loadAtlas() {
-  const statusEl = document.getElementById("status");
-  const app = document.getElementById("app");
-
-  try {
-    const res = await fetch("data/content.json");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    state.data = await res.json();
-
-    statusEl.remove();
-    buildMap(app);
-    wireToolbar();
-  } catch (err) {
-    statusEl.textContent = `Failed to load content.json: ${err.message}`;
-    statusEl.style.color = "crimson";
+    "jak-inhibitor": { x: 520, y: 350 }
   }
+};
+
+var state = {
+  data: null,
+  selectedArea: null,
+  selectedStation: null,
+  detailView: null
+};
+
+function loadAtlas() {
+  var statusEl = document.getElementById("status");
+  var app = document.getElementById("app");
+
+  fetch("data/content.json")
+    .then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function (data) {
+      state.data = data;
+      statusEl.remove();
+      buildMap(app);
+      wireToolbar();
+    })
+    .catch(function (err) {
+      statusEl.textContent = "Failed to load content.json: " + err.message;
+      statusEl.style.color = "crimson";
+    });
 }
 
 function svgEl(tag, attrs) {
-  const el = document.createElementNS(SVG_NS, tag);
-  Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
+  var el = document.createElementNS(SVG_NS, tag);
+  Object.keys(attrs || {}).forEach(function (k) {
+    el.setAttribute(k, attrs[k]);
+  });
   return el;
 }
 
 function buildMap(app) {
-  const svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
+  var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
-  state.data.areas.forEach((area) => {
-    const path = LAYOUT.linePaths[area.id];
+  state.data.areas.forEach(function (area) {
+    var path = LAYOUT.linePaths[area.id];
     if (!path) return;
-    const line = svgEl("polyline", {
+    var line = svgEl("polyline", {
       points: path,
       class: "line-path",
       stroke: area.color,
-      "data-area": area.id,
+      "data-area": area.id
     });
-    line.addEventListener("click", () => selectArea(area.id));
+    line.addEventListener("click", function () {
+      selectArea(area.id);
+    });
     svg.appendChild(line);
   });
 
-  state.data.areas.forEach((area) => {
-    const pos = LAYOUT.areaLabelPos[area.id];
+  state.data.areas.forEach(function (area) {
+    var pos = LAYOUT.areaLabelPos[area.id];
     if (!pos) return;
-    const label = svgEl("text", {
+    var label = svgEl("text", {
       x: pos.x,
       y: pos.y,
       class: "area-label",
       fill: area.color,
-      "data-area": area.id,
+      "data-area": area.id
     });
     label.textContent = area.name;
-    label.addEventListener("click", () => selectArea(area.id));
+    label.addEventListener("click", function () {
+      selectArea(area.id);
+    });
     svg.appendChild(label);
   });
 
-  state.data.modalities.forEach((mod) => {
-    const pos = LAYOUT.stationPos[mod.id];
+  state.data.modalities.forEach(function (mod) {
+    var pos = LAYOUT.stationPos[mod.id];
     if (!pos) return;
-    const isInterchange = mod.areas.length > 1;
-    const primaryColor = state.data.areas.find((a) => a.id === mod.areas[0])?.color || "#333";
+    var isInterchange = mod.areas.length > 1;
+    var primaryArea = state.data.areas.filter(function (a) {
+      return a.id === mod.areas[0];
+    })[0];
+    var primaryColor = primaryArea ? primaryArea.color : "#333";
 
-    const dot = svgEl("circle", {
+    var dot = svgEl("circle", {
       cx: pos.x,
       cy: pos.y,
       r: isInterchange ? 10 : 7,
       class: "station-dot hidden-station" + (isInterchange ? " interchange-dot" : ""),
       fill: isInterchange ? "#fff" : primaryColor,
-      "data-station": mod.id,
+      "data-station": mod.id
     });
-    dot.addEventListener("click", (e) => {
+    dot.addEventListener("click", function (e) {
       e.stopPropagation();
       selectStation(mod.id);
     });
     svg.appendChild(dot);
 
-    const label = svgEl("text", {
+    var label = svgEl("text", {
       x: pos.x,
       y: pos.y - 16,
       "text-anchor": "middle",
       class: "station-label hidden-station",
-      "data-station-label": mod.id,
+      "data-station-label": mod.id
     });
     label.textContent = mod.name;
     svg.appendChild(label);
 
     if (mod.stubOnly) {
-      const sub = svgEl("text", {
+      var sub = svgEl("text", {
         x: pos.x,
         y: pos.y + 24,
         "text-anchor": "middle",
         class: "station-sublabel hidden-station",
-        "data-station-sublabel": mod.id,
+        "data-station-sublabel": mod.id
       });
-      sub.textContent = "stub — content pending";
+      sub.textContent = "stub - content pending";
       svg.appendChild(sub);
     }
   });
@@ -140,43 +152,53 @@ function buildMap(app) {
 function selectArea(areaId) {
   state.selectedArea = areaId;
   state.selectedStation = null;
+  state.detailView = null;
   applyFocusState();
   document.getElementById("back-btn").classList.remove("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
+  var areaObj = state.data.areas.filter(function (a) { return a.id === areaId; })[0];
   document.getElementById("subtitle").textContent =
-    `Viewing the ${state.data.areas.find((a) => a.id === areaId).name} line — tap a station`;
+    "Viewing the " + areaObj.name + " line - tap a station";
 }
 
 function backToOverview() {
   state.selectedArea = null;
   state.selectedStation = null;
+  state.detailView = null;
   applyFocusState();
   document.getElementById("back-btn").classList.add("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
   document.getElementById("subtitle").textContent = "Tap a line to explore its modalities";
 }
 
+function backToStationList() {
+  state.selectedStation = null;
+  state.detailView = null;
+  applyFocusState();
+  document.getElementById("detail-panel").classList.add("hidden");
+}
+
 function applyFocusState() {
-  const svg = document.getElementById("subway-map");
-  const { selectedArea } = state;
+  var svg = document.getElementById("subway-map");
+  var selectedArea = state.selectedArea;
 
-  svg.querySelectorAll(".line-path").forEach((el) => {
-    const isActive = !selectedArea || el.dataset.area === selectedArea;
+  svg.querySelectorAll(".line-path").forEach(function (el) {
+    var isActive = !selectedArea || el.dataset.area === selectedArea;
     el.classList.toggle("faded", !isActive);
   });
 
-  svg.querySelectorAll(".area-label").forEach((el) => {
-    const isActive = !selectedArea || el.dataset.area === selectedArea;
+  svg.querySelectorAll(".area-label").forEach(function (el) {
+    var isActive = !selectedArea || el.dataset.area === selectedArea;
     el.classList.toggle("faded", !isActive);
   });
 
-  state.data.modalities.forEach((mod) => {
-    const belongsToSelected = selectedArea && mod.areas.includes(selectedArea);
-    const dot = svg.querySelector(`[data-station="${mod.id}"]`);
-    const label = svg.querySelector(`[data-station-label="${mod.id}"]`);
-    const sub = svg.querySelector(`[data-station-sublabel="${mod.id}"]`);
+  state.data.modalities.forEach(function (mod) {
+    var belongsToSelected = selectedArea && mod.areas.indexOf(selectedArea) !== -1;
+    var dot = svg.querySelector('[data-station="' + mod.id + '"]');
+    var label = svg.querySelector('[data-station-label="' + mod.id + '"]');
+    var sub = svg.querySelector('[data-station-sublabel="' + mod.id + '"]');
 
-    [dot, label, sub].forEach((el) => {
+    [dot, label, sub].forEach(function (el) {
       if (!el) return;
       el.classList.toggle("hidden-station", !belongsToSelected);
     });
@@ -187,25 +209,130 @@ function applyFocusState() {
 
 function selectStation(modId) {
   state.selectedStation = modId;
+  state.detailView = "concept";
   applyFocusState();
+  renderDetailPanel();
+}
 
-  const mod = state.data.modalities.find((m) => m.id === modId);
-  const panel = document.getElementById("detail-panel");
-  panel.classList.remove("hidden");
+function esc(str) {
+  var div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
 
-  if (mod.stubOnly) {
-    panel.innerHTML = `
-      <h3>${mod.name}</h3>
-      <p class="placeholder-note">Stub station — full content not yet authored.</p>
-    `;
+function breadcrumbHtml(area, mod, extra) {
+  var parts = [
+    '<span class="crumb" data-action="all-lines">All lines</span>',
+    '<span class="crumb-sep">&rsaquo;</span>',
+    '<span class="crumb" data-action="area">' + esc(area.name) + "</span>"
+  ];
+  if (extra) {
+    parts.push(
+      '<span class="crumb-sep">&rsaquo;</span>',
+      '<span class="crumb" data-action="concept">' + esc(mod.name) + "</span>",
+      '<span class="crumb-sep">&rsaquo;</span>',
+      '<span class="crumb current">' + esc(extra) + "</span>"
+    );
+  } else {
+    parts.push(
+      '<span class="crumb-sep">&rsaquo;</span>',
+      '<span class="crumb current">' + esc(mod.name) + "</span>"
+    );
+  }
+  return '<nav class="breadcrumb">' + parts.join("") + "</nav>";
+}
+
+function renderDetailPanel() {
+  var panel = document.getElementById("detail-panel");
+  if (!state.selectedStation) {
+    panel.classList.add("hidden");
     return;
   }
 
-  panel.innerHTML = `
-    <h3>${mod.name}</h3>
-    <p>${mod.concept}</p>
-    <p class="placeholder-note">Full Layer 3/4 view (concept + example drugs / pros-cons buttons) is built in Phase 5. This is a preview of the data only.</p>
-  `;
+  var mod = state.data.modalities.filter(function (m) { return m.id === state.selectedStation; })[0];
+  var area = state.data.areas.filter(function (a) { return a.id === state.selectedArea; })[0];
+  panel.classList.remove("hidden");
+
+  if (mod.stubOnly) {
+    panel.innerHTML =
+      breadcrumbHtml(area, mod) +
+      "<h3>" + esc(mod.name) + "</h3><p class=\"placeholder-note\">Stub station - full content not yet authored.</p>";
+    wireBreadcrumb();
+    return;
+  }
+
+  if (state.detailView === "drugs") {
+    var drugs = mod.exampleDrugIds.map(function (id) {
+      return state.data.exampleDrugs.filter(function (d) { return d.id === id; })[0];
+    });
+    var drugItems = drugs.map(function (d) {
+      return "<li><span class=\"drug-name\">" + esc(d.name) + "</span><span class=\"drug-meta\">" + esc(d.company) + " &middot; " + d.year + "</span></li>";
+    }).join("");
+    panel.innerHTML =
+      breadcrumbHtml(area, mod, "Example drugs") +
+      "<h3>" + esc(mod.name) + " - Example drugs</h3>" +
+      "<ul class=\"drug-list\">" + drugItems + "</ul>" +
+      "<button class=\"back-inline\" data-action=\"back-to-concept\">&larr; Back to concept</button>";
+  } else if (state.detailView === "proscons") {
+    var prosItems = mod.pros.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
+    var consItems = mod.cons.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("");
+    panel.innerHTML =
+      breadcrumbHtml(area, mod, "Pros / Cons") +
+      "<h3>" + esc(mod.name) + " - Pros / Cons</h3>" +
+      "<div class=\"proscons-grid\">" +
+      "<div class=\"proscons-col pros-col\"><h4>Pros</h4><ul>" + prosItems + "</ul></div>" +
+      "<div class=\"proscons-col cons-col\"><h4>Cons</h4><ul>" + consItems + "</ul></div>" +
+      "</div>" +
+      "<p class=\"verdict\"><strong>Verdict:</strong> " + esc(mod.verdict) + "</p>" +
+      "<button class=\"back-inline\" data-action=\"back-to-concept\">&larr; Back to concept</button>";
+  } else {
+    var schematic = "";
+    if (mod.schematicParts && mod.schematicParts.length) {
+      schematic = "<p class=\"schematic-caption\">Built from: " + mod.schematicParts.map(esc).join(" &middot; ") + "</p>";
+    }
+    panel.innerHTML =
+      breadcrumbHtml(area, mod) +
+      "<h3>" + esc(mod.name) + "</h3>" +
+      "<p>" + esc(mod.concept) + "</p>" +
+      schematic +
+      "<div class=\"layer3-buttons\">" +
+      "<button data-view=\"drugs\">💊 Example drugs</button>" +
+      "<button data-view=\"proscons\">⚖ Pros / Cons</button>" +
+      "</div>";
+  }
+
+  wirePanelButtons();
+}
+
+function wireBreadcrumb() {
+  document.querySelectorAll(".crumb[data-action]").forEach(function (el) {
+    el.addEventListener("click", function () {
+      var action = el.dataset.action;
+      if (action === "all-lines") backToOverview();
+      else if (action === "area") backToStationList();
+      else if (action === "concept") {
+        state.detailView = "concept";
+        renderDetailPanel();
+      }
+    });
+  });
+}
+
+function wirePanelButtons() {
+  wireBreadcrumb();
+  document.querySelectorAll("#detail-panel button[data-view]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      state.detailView = btn.dataset.view;
+      renderDetailPanel();
+    });
+  });
+  var backBtn = document.querySelector('#detail-panel [data-action="back-to-concept"]');
+  if (backBtn) {
+    backBtn.addEventListener("click", function () {
+      state.detailView = "concept";
+      renderDetailPanel();
+    });
+  }
 }
 
 function wireToolbar() {

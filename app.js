@@ -222,13 +222,16 @@ function applyFocusState() {
     var labels = svg.querySelectorAll('[data-station-label="' + mod.id + '"]');
     var sub = svg.querySelector('[data-station-sublabel="' + mod.id + '"]');
 
+    var isSelected = mod.id === state.selectedStation;
+
     if (dot) dot.classList.toggle("hidden-station", !belongsToSelected);
     labels.forEach(function (el) {
       el.classList.toggle("hidden-station", !belongsToSelected);
+      el.classList.toggle("selected", isSelected);
     });
     if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);
 
-    if (dot) dot.classList.toggle("selected", mod.id === state.selectedStation);
+    if (dot) dot.classList.toggle("selected", isSelected);
   });
 }
 

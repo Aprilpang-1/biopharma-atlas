@@ -104,6 +104,7 @@ header {
 }
 
 .station-dot.selected {
+  r: 10px;
   stroke: #222;
   stroke-width: 3;
 }
@@ -119,7 +120,12 @@ header {
   font-weight: 600;
   fill: #222;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, font-size 0.15s ease;
+}
+
+.station-label.selected {
+  font-size: 16px;
+  fill: #111;
 }
 
 .station-label.hidden-station {

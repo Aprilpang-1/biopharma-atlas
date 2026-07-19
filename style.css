@@ -42,10 +42,25 @@ header {
   color: #666;
 }
 
+#app {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -1.5rem;
+  padding: 0 1.5rem;
+}
+
 #subway-map {
-  width: 100%;
+  width: 900px;
+  min-width: 900px;
   height: auto;
   display: block;
+}
+
+.scroll-hint {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0 0 0.5rem;
+  display: none;
 }
 
 .line-path {
@@ -146,4 +161,187 @@ header {
   color: #999;
   font-style: italic;
   margin-top: 0.6rem;
+}
+
+.breadcrumb {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.6rem;
+}
+
+.crumb {
+  cursor: pointer;
+}
+
+.crumb:hover {
+  text-decoration: underline;
+}
+
+.crumb.current {
+  color: #222;
+  font-weight: 600;
+  cursor: default;
+}
+
+.crumb.current:hover {
+  text-decoration: none;
+}
+
+.crumb-sep {
+  margin: 0 0.35rem;
+}
+
+.schematic-caption {
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+}
+
+.layer3-buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.layer3-buttons button {
+  flex: 1;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.layer3-buttons button:hover {
+  background: #f0f0f0;
+}
+
+.drug-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.drug-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 0.9rem;
+}
+
+.drug-name {
+  font-weight: 600;
+}
+
+.drug-meta {
+  color: #888;
+}
+
+.proscons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+
+.proscons-col h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+
+.pros-col h4 {
+  color: #1a7a4c;
+}
+
+.cons-col h4 {
+  color: #b3401f;
+}
+
+.proscons-col ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.proscons-col li {
+  margin-bottom: 0.35rem;
+}
+
+.verdict {
+  font-size: 0.9rem;
+  background: #eef1f5;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.back-inline {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.back-inline:hover {
+  background: #f4f4f4;
+}
+
+@media (max-width: 600px) {
+  .proscons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    padding: 1.25rem 1rem;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .scroll-hint {
+    display: block;
+  }
+
+  .station-dot {
+    r: 10px;
+  }
+
+  .station-dot.interchange-dot {
+    r: 13px;
+  }
+
+  .layer3-buttons {
+    flex-direction: column;
+  }
+
+  .layer3-buttons button {
+    padding: 0.75rem 0.8rem;
+    font-size: 1rem;
+  }
+
+  #back-btn,
+  .back-inline {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .breadcrumb {
+    line-height: 1.6;
+  }
+
+  .drug-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
 }

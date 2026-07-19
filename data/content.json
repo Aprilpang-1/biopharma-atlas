@@ -1,5 +1,5 @@
 {
-  "_schemaNotes": "Phase 2: all 7 Oncology modalities fully authored (concept, schematicParts, pros, cons, verdict, exampleDrugIds). schematicParts are text labels only — accurate illustrated schematics are a Phase 4/5 deliverable, not part of this content pass. Immunology stubs remain name-only per Section 8 of the locked spec.",
+  "_schemaNotes": "All 7 Oncology modalities plus both Immunology modalities (Anti-Cytokine mAb, JAK Inhibitor) are fully authored (concept, schematicParts, pros, cons, verdict, exampleDrugIds). schematicParts are text labels only — accurate illustrated schematics remain a later polish item, not part of this content pass.",
 
   "areas": [
     { "id": "oncology", "name": "Oncology", "color": "#E63946" },
@@ -88,25 +88,23 @@
       "id": "anti-cytokine-mab",
       "name": "Anti-Cytokine mAb",
       "areas": ["immunology"],
-      "concept": null,
-      "schematicParts": [],
-      "pros": [],
-      "cons": [],
-      "verdict": null,
-      "exampleDrugIds": [],
-      "stubOnly": true
+      "concept": "An antibody that neutralizes a single inflammatory messenger molecule (a cytokine like TNF-alpha) before it can trigger the immune system to attack the body's own tissue — dialing down chronic inflammation at its source.",
+      "schematicParts": ["antibody", "target cytokine (e.g. TNF-alpha)"],
+      "pros": ["Highly effective at inducing remission in autoimmune disease", "Decades of real-world safety data (first approved 1998)", "Broad utility across rheumatoid arthritis, IBD, psoriasis, and more"],
+      "cons": ["Increased risk of infection and reactivated latent infections", "Up to half of patients don't respond adequately", "High cost (~$20,000+/year) with risk of anti-drug antibodies reducing efficacy over time"],
+      "verdict": "The founding biologic class for autoimmune disease — effective and well-proven, but not universally effective.",
+      "exampleDrugIds": ["infliximab", "adalimumab"]
     },
     {
       "id": "jak-inhibitor",
       "name": "JAK Inhibitor",
       "areas": ["immunology"],
-      "concept": null,
-      "schematicParts": [],
-      "pros": [],
-      "cons": [],
-      "verdict": null,
-      "exampleDrugIds": [],
-      "stubOnly": true
+      "concept": "A small-molecule pill that blocks JAK enzymes inside immune cells, interrupting the internal relay signal cytokines use to trigger inflammation — shutting down multiple inflammatory pathways at once from inside the cell.",
+      "schematicParts": ["small molecule drug", "JAK enzyme (intracellular)"],
+      "pros": ["Oral pill — no injections or infusions", "Fast symptom relief (weeks, not months)", "Modulates multiple cytokine pathways at once, useful when a single-target biologic fails"],
+      "cons": ["FDA boxed warning: higher risk of blood clots, heart events, and cancer in some patients", "Increased risk of shingles (herpes zoster) infection", "Requires ongoing monitoring (bloodwork, cardiovascular risk factors)"],
+      "verdict": "Fast and convenient, but a more serious safety profile limits use in higher-risk patients.",
+      "exampleDrugIds": ["tofacitinib", "upadacitinib"]
     }
   ],
 
@@ -125,6 +123,10 @@
     { "id": "opdivo", "name": "Opdivo", "company": "BMS", "year": 2014 },
     { "id": "yervoy", "name": "Yervoy", "company": "BMS", "year": 2011 },
     { "id": "pluvicto", "name": "Pluvicto", "company": "Novartis", "year": 2022 },
-    { "id": "lutathera", "name": "Lutathera", "company": "Novartis", "year": 2018 }
+    { "id": "lutathera", "name": "Lutathera", "company": "Novartis", "year": 2018 },
+    { "id": "infliximab", "name": "Infliximab (Remicade)", "company": "Janssen", "year": 1998 },
+    { "id": "adalimumab", "name": "Adalimumab (Humira)", "company": "AbbVie", "year": 2002 },
+    { "id": "tofacitinib", "name": "Tofacitinib (Xeljanz)", "company": "Pfizer", "year": 2012 },
+    { "id": "upadacitinib", "name": "Upadacitinib (Rinvoq)", "company": "AbbVie", "year": 2019 }
   ]
 }

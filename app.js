@@ -32,8 +32,83 @@ var state = {
   data: null,
   selectedArea: null,
   selectedStation: null,
-  detailView: null
+  detailView: null,
+  pinned: [],
+  comparing: false
 };
+
+function isPinned(modId) {
+  return state.pinned.indexOf(modId) !== -1;
+}
+
+function togglePin(modId) {
+  var idx = state.pinned.indexOf(modId);
+  if (idx !== -1) {
+    state.pinned.splice(idx, 1);
+  } else {
+    state.pinned.push(modId);
+    if (state.pinned.length > 2) state.pinned.shift();
+  }
+  updateCompareButton();
+  if (!state.comparing) renderDetailPanel();
+}
+
+function updateCompareButton() {
+  var btn = document.getElementById("compare-btn");
+  var countEl = document.getElementById("compare-count");
+  countEl.textContent = state.pinned.length;
+  btn.classList.toggle("hidden", state.pinned.length < 2);
+}
+
+function drugListHtml(mod) {
+  var drugs = mod.exampleDrugIds.map(function (id) {
+    return state.data.exampleDrugs.filter(function (d) { return d.id === id; })[0];
+  });
+  return drugs.map(function (d) {
+    return "<li><span class=\"drug-name\">" + esc(d.name) + "</span><span class=\"drug-meta\">" + esc(d.company) + " &middot; " + d.year + "</span></li>";
+  }).join("");
+}
+
+function compareCardHtml(mod) {
+  var prosItems = mod.pros.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");
+  var consItems = mod.cons.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("");
+  return (
+    "<div class=\"compare-card\">" +
+    "<h3>" + esc(mod.name) + "</h3>" +
+    "<p>" + esc(mod.concept) + "</p>" +
+    "<h4>Pros</h4><ul>" + prosItems + "</ul>" +
+    "<h4>Cons</h4><ul>" + consItems + "</ul>" +
+    "<p class=\"verdict\"><strong>Verdict:</strong> " + esc(mod.verdict) + "</p>" +
+    "<h4>Example drugs</h4><ul class=\"drug-list\">" + drugListHtml(mod) + "</ul>" +
+    "</div>"
+  );
+}
+
+function showCompareView() {
+  state.comparing = true;
+  renderComparePanel();
+}
+
+function closeCompare() {
+  state.comparing = false;
+  renderDetailPanel();
+}
+
+function renderComparePanel() {
+  var panel = document.getElementById("detail-panel");
+  var mods = state.pinned.map(function (id) {
+    return state.data.modalities.filter(function (m) { return m.id === id; })[0];
+  });
+  panel.classList.remove("hidden");
+  panel.innerHTML =
+    "<div class=\"compare-header\">" +
+    "<h3>Comparing modalities</h3>" +
+    "<button class=\"back-inline\" data-action=\"close-compare\">&times; Close comparison</button>" +
+    "</div>" +
+    "<div class=\"compare-grid\">" + mods.map(compareCardHtml).join("") + "</div>";
+  var closeBtn = panel.querySelector('[data-action="close-compare"]');
+  if (closeBtn) closeBtn.addEventListener("click", closeCompare);
+}
 
 function loadAtlas() {
   var statusEl = document.getElementById("status");
@@ -177,6 +252,7 @@ function selectArea(areaId) {
   state.selectedArea = areaId;
   state.selectedStation = null;
   state.detailView = null;
+  state.comparing = false;
   applyFocusState();
   document.getElementById("back-btn").classList.remove("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
@@ -189,6 +265,7 @@ function backToOverview() {
   state.selectedArea = null;
   state.selectedStation = null;
   state.detailView = null;
+  state.comparing = false;
   applyFocusState();
   document.getElementById("back-btn").classList.add("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
@@ -198,6 +275,7 @@ function backToOverview() {
 function backToStationList() {
   state.selectedStation = null;
   state.detailView = null;
+  state.comparing = false;
   applyFocusState();
   document.getElementById("detail-panel").classList.add("hidden");
 }
@@ -238,6 +316,7 @@ function applyFocusState() {
 function selectStation(modId) {
   state.selectedStation = modId;
   state.detailView = "concept";
+  state.comparing = false;
   applyFocusState();
   renderDetailPanel();
 }
@@ -318,9 +397,13 @@ function renderDetailPanel() {
     if (mod.schematicParts && mod.schematicParts.length) {
       schematic = "<p class=\"schematic-caption\">Built from: " + mod.schematicParts.map(esc).join(" &middot; ") + "</p>";
     }
+    var pinLabel = isPinned(mod.id) ? "📌 Pinned" : "📌 Pin to compare";
     panel.innerHTML =
       breadcrumbHtml(area, mod) +
+      "<div class=\"layer3-heading\">" +
       "<h3>" + esc(mod.name) + "</h3>" +
+      "<button class=\"pin-btn" + (isPinned(mod.id) ? " pinned" : "") + "\" data-action=\"toggle-pin\" data-mod=\"" + esc(mod.id) + "\">" + pinLabel + "</button>" +
+      "</div>" +
       "<p>" + esc(mod.concept) + "</p>" +
       schematic +
       "<div class=\"layer3-buttons\">" +
@@ -361,10 +444,17 @@ function wirePanelButtons() {
       renderDetailPanel();
     });
   }
+  var pinBtn = document.querySelector('#detail-panel [data-action="toggle-pin"]');
+  if (pinBtn) {
+    pinBtn.addEventListener("click", function () {
+      togglePin(pinBtn.dataset.mod);
+    });
+  }
 }
 
 function wireToolbar() {
   document.getElementById("back-btn").addEventListener("click", backToOverview);
+  document.getElementById("compare-btn").addEventListener("click", showCompareView);
 }
 
 loadAtlas();

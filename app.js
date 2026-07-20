@@ -6,14 +6,16 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 // Hand-tuned layout - station positions are presentational, not content,
 // so they live here rather than in content.json.
 const LAYOUT = {
-  viewBox: "0 0 1300 460",
+  viewBox: "0 0 1300 580",
   linePaths: {
     oncology: "60,150 190,150 220,250 250,150 400,150 580,150 780,150 1000,150 1220,150",
-    immunology: "140,350 220,250 340,350 420,350 600,350"
+    immunology: "140,350 220,250 340,350 420,350 600,350",
+    "rare-disease": "60,500 350,500 640,500 930,500 1220,500"
   },
   areaLabelPos: {
     oncology: { x: 60, y: 120 },
-    immunology: { x: 140, y: 400 }
+    immunology: { x: 140, y: 400 },
+    "rare-disease": { x: 60, y: 470 }
   },
   stationPos: {
     "targeted-mab": { x: 60, y: 150 },
@@ -24,7 +26,12 @@ const LAYOUT = {
     "checkpoint-inhibitor": { x: 1000, y: 150 },
     "radioligand-therapy": { x: 1220, y: 150 },
     "anti-cytokine-mab": { x: 420, y: 350 },
-    "jak-inhibitor": { x: 600, y: 350 }
+    "jak-inhibitor": { x: 600, y: 350 },
+    "gene-therapy-aav": { x: 60, y: 500 },
+    "enzyme-replacement-therapy": { x: 350, y: 500 },
+    "aso": { x: 640, y: 500 },
+    "rnai-therapeutics": { x: 930, y: 500 },
+    "crispr-gene-editing": { x: 1220, y: 500 }
   }
 };
 

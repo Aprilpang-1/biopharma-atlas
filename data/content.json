@@ -3,7 +3,8 @@
 
   "areas": [
     { "id": "oncology", "name": "Oncology", "color": "#E63946" },
-    { "id": "immunology", "name": "Immunology", "color": "#457B9D" }
+    { "id": "immunology", "name": "Immunology", "color": "#457B9D" },
+    { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93" }
   ],
 
   "modalities": [
@@ -105,6 +106,61 @@
       "cons": ["FDA boxed warning: higher risk of blood clots, heart events, and cancer in some patients", "Increased risk of shingles (herpes zoster) infection", "Requires ongoing monitoring (bloodwork, cardiovascular risk factors)"],
       "verdict": "Fast and convenient, but a more serious safety profile limits use in higher-risk patients.",
       "exampleDrugIds": ["tofacitinib", "upadacitinib"]
+    },
+    {
+      "id": "gene-therapy-aav",
+      "name": "Gene Therapy (AAV)",
+      "areas": ["rare-disease"],
+      "concept": "A modified, harmless virus delivers a correct copy of a faulty gene directly into a patient's cells, letting the body permanently produce the protein it was missing — a one-time treatment aimed at fixing the root cause.",
+      "schematicParts": ["AAV viral vector", "corrected gene"],
+      "pros": ["Potentially curative with a single treatment", "Restores function in previously untreatable genetic diseases", "Long-term expression in non-dividing cells (e.g. neurons, muscle)"],
+      "cons": ["Extremely expensive ($850K–$2.1M per treatment)", "Immune response to the viral vector can cause liver toxicity or block re-dosing", "Limited cargo size — can't deliver very large genes"],
+      "verdict": "The closest thing to a cure in rare disease — genuinely transformative, but priced and dosed like it.",
+      "exampleDrugIds": ["zolgensma", "luxturna"]
+    },
+    {
+      "id": "enzyme-replacement-therapy",
+      "name": "Enzyme Replacement Therapy",
+      "areas": ["rare-disease"],
+      "concept": "A lab-made version of a missing enzyme is infused into the bloodstream on a regular schedule, clearing out the toxic buildup that the body can't break down on its own.",
+      "schematicParts": ["recombinant enzyme", "IV infusion"],
+      "pros": ["Established, well-understood mechanism (first approved 1994)", "Meaningfully reduces symptoms and organ damage", "Improved life expectancy in several lysosomal storage diseases"],
+      "cons": ["Not a cure — requires infusions for life", "Can't cross the blood-brain barrier, so neurological symptoms often remain untreated", "High ongoing cost ($100,000+/year) with infusion-related allergic reactions"],
+      "verdict": "Manages disease effectively, but it's a lifelong commitment, not a fix.",
+      "exampleDrugIds": ["cerezyme", "fabrazyme"]
+    },
+    {
+      "id": "aso",
+      "name": "Antisense Oligonucleotide (ASO)",
+      "areas": ["rare-disease"],
+      "concept": "A short synthetic strand of genetic material binds to a patient's faulty RNA and corrects how it's read — either skipping a broken section or blocking production of a harmful protein — without altering the DNA itself.",
+      "schematicParts": ["synthetic oligonucleotide", "target RNA"],
+      "pros": ["Reversible — acts on RNA, not permanent DNA changes", "Proven to dramatically improve outcomes (e.g. infant survival in spinal muscular atrophy)", "Can be redesigned quickly for a new genetic target"],
+      "cons": ["Usually requires repeated dosing (e.g. spinal injections every 4 months for Spinraza)", "Only treats the specific mutation/exon it's designed for", "Delivery to some tissues remains difficult"],
+      "verdict": "A precise, reversible fix at the RNA level — practical, but not a one-and-done treatment.",
+      "exampleDrugIds": ["spinraza", "exondys51"]
+    },
+    {
+      "id": "rnai-therapeutics",
+      "name": "RNAi Therapeutics",
+      "areas": ["rare-disease"],
+      "concept": "A small RNA molecule hijacks the cell's own gene-silencing machinery to destroy the messenger RNA of a disease-causing gene before it can be turned into protein — like deleting the instructions before they're read.",
+      "schematicParts": ["siRNA molecule", "RNA-induced silencing complex"],
+      "pros": ["Long-lasting effect from infrequent dosing (as rare as twice a year)", "High specificity — sequence-matched to the target gene", "Well-tolerated safety profile so far across approved drugs"],
+      "cons": ["Delivery is hard — needs a nanoparticle or chemical conjugate to reach cells intact", "Still a young drug class (first approval 2018), long-term data limited", "Only silences genes — can't add or fix missing function"],
+      "verdict": "An elegant, durable way to switch off a harmful gene — delivery technology is what unlocked it.",
+      "exampleDrugIds": ["onpattro", "givlaari"]
+    },
+    {
+      "id": "crispr-gene-editing",
+      "name": "CRISPR Gene Editing",
+      "areas": ["rare-disease"],
+      "concept": "A patient's own cells are removed, their DNA is precisely edited using CRISPR molecular scissors to correct or disable the disease-causing sequence, then infused back — a permanent edit rather than a temporary patch.",
+      "schematicParts": ["CRISPR/Cas9 scissors", "patient's own edited cells"],
+      "pros": ["First-ever approved therapy to directly edit human DNA (2023)", "Potentially one-time, curative treatment", "Strong early real-world results, no serious adverse events reported so far"],
+      "cons": ["Very expensive ($2.2M) and requires an arduous stem-cell transplant process", "Long-term safety of permanent DNA edits still unknown", "Off-target editing risk raises ongoing ethical and safety questions"],
+      "verdict": "The newest and most powerful tool in the box — enormous promise, but still early days.",
+      "exampleDrugIds": ["casgevy"]
     }
   ],
 
@@ -127,6 +183,15 @@
     { "id": "infliximab", "name": "Infliximab (Remicade)", "company": "Janssen", "year": 1998 },
     { "id": "adalimumab", "name": "Adalimumab (Humira)", "company": "AbbVie", "year": 2002 },
     { "id": "tofacitinib", "name": "Tofacitinib (Xeljanz)", "company": "Pfizer", "year": 2012 },
-    { "id": "upadacitinib", "name": "Upadacitinib (Rinvoq)", "company": "AbbVie", "year": 2019 }
+    { "id": "upadacitinib", "name": "Upadacitinib (Rinvoq)", "company": "AbbVie", "year": 2019 },
+    { "id": "zolgensma", "name": "Zolgensma", "company": "Novartis", "year": 2019 },
+    { "id": "luxturna", "name": "Luxturna", "company": "Spark Therapeutics", "year": 2017 },
+    { "id": "cerezyme", "name": "Cerezyme", "company": "Genzyme/Sanofi", "year": 1994 },
+    { "id": "fabrazyme", "name": "Fabrazyme", "company": "Genzyme/Sanofi", "year": 2003 },
+    { "id": "spinraza", "name": "Spinraza", "company": "Biogen", "year": 2016 },
+    { "id": "exondys51", "name": "Exondys 51", "company": "Sarepta", "year": 2016 },
+    { "id": "onpattro", "name": "Onpattro", "company": "Alnylam", "year": 2018 },
+    { "id": "givlaari", "name": "Givlaari", "company": "Alnylam", "year": 2019 },
+    { "id": "casgevy", "name": "Casgevy", "company": "Vertex/CRISPR Therapeutics", "year": 2023 }
   ]
 }

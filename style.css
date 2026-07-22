@@ -192,6 +192,63 @@ header {
   opacity: 0.7;
 }
 
+.area-badge {
+  cursor: pointer;
+  transition: opacity 0.3s ease, fill 0.3s ease;
+}
+
+.area-badge-text {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #fff;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.area-badge.faded {
+  fill: #ccc !important;
+  opacity: 0.7;
+}
+
+.area-badge-text.faded {
+  opacity: 0.7;
+}
+
+#map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #eee;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.legend-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .station-dot {
   cursor: pointer;
   transition: opacity 0.3s ease, r 0.15s ease;

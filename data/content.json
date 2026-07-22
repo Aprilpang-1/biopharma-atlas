@@ -2,9 +2,9 @@
   "_schemaNotes": "All 7 Oncology modalities plus both Immunology modalities (Anti-Cytokine mAb, JAK Inhibitor) are fully authored (concept, schematicParts, pros, cons, verdict, exampleDrugIds). schematicParts are text labels only — accurate illustrated schematics remain a later polish item, not part of this content pass.",
 
   "areas": [
-    { "id": "oncology", "name": "Oncology", "color": "#E63946" },
-    { "id": "immunology", "name": "Immunology", "color": "#457B9D" },
-    { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93" }
+    { "id": "oncology", "name": "Oncology", "color": "#E63946", "abbr": "ON" },
+    { "id": "immunology", "name": "Immunology", "color": "#457B9D", "abbr": "IM" },
+    { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93", "abbr": "RD" }
   ],
 
   "modalities": [

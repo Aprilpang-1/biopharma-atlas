@@ -6,16 +6,17 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 // Hand-tuned layout - station positions are presentational, not content,
 // so they live here rather than in content.json.
 const LAYOUT = {
-  viewBox: "0 0 1300 580",
+  viewBox: "0 0 1300 820",
   linePaths: {
     oncology: "60,150 190,150 220,250 250,150 400,150 580,150 780,150 1000,150 1220,150",
     immunology: "140,350 220,250 340,350 420,350 600,350",
-    "rare-disease": "60,500 350,500 640,500 930,500 1220,500"
+    // independent diagonal, like a standalone metro line that never meets the others
+    "rare-disease": "60,760 350,690 640,620 930,550 1220,480"
   },
   areaLabelPos: {
     oncology: { x: 60, y: 120 },
     immunology: { x: 140, y: 400 },
-    "rare-disease": { x: 60, y: 470 }
+    "rare-disease": { x: 60, y: 795 }
   },
   stationPos: {
     "targeted-mab": { x: 60, y: 150 },
@@ -27,11 +28,11 @@ const LAYOUT = {
     "radioligand-therapy": { x: 1220, y: 150 },
     "anti-cytokine-mab": { x: 420, y: 350 },
     "jak-inhibitor": { x: 600, y: 350 },
-    "gene-therapy-aav": { x: 60, y: 500 },
-    "enzyme-replacement-therapy": { x: 350, y: 500 },
-    "aso": { x: 640, y: 500 },
-    "rnai-therapeutics": { x: 930, y: 500 },
-    "crispr-gene-editing": { x: 1220, y: 500 }
+    "gene-therapy-aav": { x: 60, y: 760 },
+    "enzyme-replacement-therapy": { x: 350, y: 690 },
+    "aso": { x: 640, y: 620 },
+    "rnai-therapeutics": { x: 930, y: 550 },
+    "crispr-gene-editing": { x: 1220, y: 480 }
   }
 };
 
@@ -130,6 +131,7 @@ function loadAtlas() {
       state.data = data;
       statusEl.remove();
       buildMap(app);
+      renderLegend();
       wireToolbar();
     })
     .catch(function (err) {
@@ -187,6 +189,32 @@ function buildMap(app) {
   state.data.areas.forEach(function (area) {
     var pos = LAYOUT.areaLabelPos[area.id];
     if (!pos) return;
+
+    var badge = svgEl("rect", {
+      x: pos.x - 26,
+      y: pos.y - 16,
+      width: 20,
+      height: 20,
+      rx: 5,
+      fill: area.color,
+      class: "area-badge",
+      "data-area": area.id
+    });
+    badge.addEventListener("click", function () {
+      selectArea(area.id);
+    });
+    svg.appendChild(badge);
+
+    var badgeText = svgEl("text", {
+      x: pos.x - 16,
+      y: pos.y - 1,
+      "text-anchor": "middle",
+      class: "area-badge-text",
+      "data-area": area.id
+    });
+    badgeText.textContent = area.abbr || area.name.slice(0, 2).toUpperCase();
+    svg.appendChild(badgeText);
+
     var label = svgEl("text", {
       x: pos.x,
       y: pos.y,
@@ -255,6 +283,20 @@ function buildMap(app) {
   app.appendChild(svg);
 }
 
+function renderLegend() {
+  var el = document.getElementById("map-legend");
+  if (!el) return;
+  var items = state.data.areas.map(function (area) {
+    return (
+      "<span class=\"legend-item\">" +
+      "<span class=\"legend-swatch\" style=\"background:" + area.color + "\">" + esc(area.abbr || "") + "</span>" +
+      esc(area.name) +
+      "</span>"
+    );
+  }).join("");
+  el.innerHTML = "<span class=\"legend-label\">Lines:</span>" + items;
+}
+
 function selectArea(areaId) {
   state.selectedArea = areaId;
   state.selectedStation = null;
@@ -297,6 +339,11 @@ function applyFocusState() {
   });
 
   svg.querySelectorAll(".area-label").forEach(function (el) {
+    var isActive = !selectedArea || el.dataset.area === selectedArea;
+    el.classList.toggle("faded", !isActive);
+  });
+
+  svg.querySelectorAll(".area-badge, .area-badge-text").forEach(function (el) {
     var isActive = !selectedArea || el.dataset.area === selectedArea;
     el.classList.toggle("faded", !isActive);
   });

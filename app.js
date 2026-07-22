@@ -11,12 +11,15 @@ const LAYOUT = {
     oncology: "60,150 190,150 220,250 250,150 400,150 580,150 780,150 1000,150 1220,150",
     immunology: "140,350 220,250 340,350 420,350 600,350",
     // independent diagonal, like a standalone metro line that never meets the others
-    "rare-disease": "60,760 350,690 640,620 930,550 1220,480"
+    "rare-disease": "60,760 350,690 640,620 930,550 1220,480",
+    // shares its start with Oncology (targeted-mab) and its end with Rare Disease (rnai-therapeutics)
+    metabolic: "60,150 250,480 930,550"
   },
   areaLabelPos: {
     oncology: { x: 60, y: 120 },
     immunology: { x: 140, y: 400 },
-    "rare-disease": { x: 60, y: 795 }
+    "rare-disease": { x: 60, y: 795 },
+    metabolic: { x: 130, y: 460 }
   },
   stationPos: {
     "targeted-mab": { x: 60, y: 150 },
@@ -32,7 +35,8 @@ const LAYOUT = {
     "enzyme-replacement-therapy": { x: 350, y: 690 },
     "aso": { x: 640, y: 620 },
     "rnai-therapeutics": { x: 930, y: 550 },
-    "crispr-gene-editing": { x: 1220, y: 480 }
+    "crispr-gene-editing": { x: 1220, y: 480 },
+    "glp1-agonist": { x: 250, y: 480 }
   }
 };
 

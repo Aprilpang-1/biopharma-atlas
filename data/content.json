@@ -4,7 +4,8 @@
   "areas": [
     { "id": "oncology", "name": "Oncology", "color": "#E63946", "abbr": "ON" },
     { "id": "immunology", "name": "Immunology", "color": "#457B9D", "abbr": "IM" },
-    { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93", "abbr": "RD" }
+    { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93", "abbr": "RD" },
+    { "id": "metabolic", "name": "Metabolic", "color": "#F4A261", "abbr": "MB" }
   ],
 
   "modalities": [
@@ -22,13 +23,13 @@
     {
       "id": "targeted-mab",
       "name": "Targeted mAb",
-      "areas": ["oncology"],
-      "concept": "A lab-made antibody that recognizes one specific protein on cancer cells and either blocks its growth signal directly or flags the cell for the immune system to destroy — oncology's original precision therapy, dating to the late 1990s.",
+      "areas": ["oncology", "metabolic"],
+      "concept": "A lab-made antibody that recognizes one specific protein and blocks its function or flags the cell for immune destruction — from marking cancer cells for attack to neutralizing a protein that drives high cholesterol. One of biotech's most versatile and time-tested antibody formats, dating to the late 1990s.",
       "schematicParts": ["antibody", "target antigen"],
-      "pros": ["Highly selective for tumor cells, spares healthy tissue", "Better tolerated than conventional chemotherapy", "Can work through multiple mechanisms at once"],
-      "cons": ["Only works if the tumor expresses the target antigen", "Large molecules can't reach some tumor sites (e.g. brain)", "Resistance can develop over time"],
+      "pros": ["Highly selective for its target, spares healthy tissue", "Better tolerated than conventional chemotherapy", "Can work through multiple mechanisms at once"],
+      "cons": ["Only works if the target protein is present/accessible", "Large molecules can't reach some tissue sites (e.g. brain)", "Resistance or reduced response can develop over time"],
       "verdict": "The foundational modality — proven and safe, but often needs a combination partner for full effect.",
-      "exampleDrugIds": ["rituximab", "trastuzumab"]
+      "exampleDrugIds": ["rituximab", "trastuzumab", "evolocumab"]
     },
     {
       "id": "bispecific-ab",
@@ -143,13 +144,13 @@
     {
       "id": "rnai-therapeutics",
       "name": "RNAi Therapeutics",
-      "areas": ["rare-disease"],
+      "areas": ["rare-disease", "metabolic"],
       "concept": "A small RNA molecule hijacks the cell's own gene-silencing machinery to destroy the messenger RNA of a disease-causing gene before it can be turned into protein — like deleting the instructions before they're read.",
       "schematicParts": ["siRNA molecule", "RNA-induced silencing complex"],
       "pros": ["Long-lasting effect from infrequent dosing (as rare as twice a year)", "High specificity — sequence-matched to the target gene", "Well-tolerated safety profile so far across approved drugs"],
       "cons": ["Delivery is hard — needs a nanoparticle or chemical conjugate to reach cells intact", "Still a young drug class (first approval 2018), long-term data limited", "Only silences genes — can't add or fix missing function"],
       "verdict": "An elegant, durable way to switch off a harmful gene — delivery technology is what unlocked it.",
-      "exampleDrugIds": ["onpattro", "givlaari"]
+      "exampleDrugIds": ["onpattro", "givlaari", "inclisiran"]
     },
     {
       "id": "crispr-gene-editing",
@@ -161,6 +162,17 @@
       "cons": ["Very expensive ($2.2M) and requires an arduous stem-cell transplant process", "Long-term safety of permanent DNA edits still unknown", "Off-target editing risk raises ongoing ethical and safety questions"],
       "verdict": "The newest and most powerful tool in the box — enormous promise, but still early days.",
       "exampleDrugIds": ["casgevy"]
+    },
+    {
+      "id": "glp1-agonist",
+      "name": "GLP-1 Receptor Agonist",
+      "areas": ["metabolic"],
+      "concept": "A lab-made version of a natural gut hormone (GLP-1) that boosts insulin release, slows digestion, and signals the brain to reduce appetite — originally a diabetes drug that turned out to be one of the most effective weight-loss treatments ever approved.",
+      "schematicParts": ["GLP-1 analog", "GLP-1 receptor (pancreas, brain, gut)"],
+      "pros": ["Produces double-digit percentage weight loss in clinical trials — unprecedented for a drug, not surgery", "Also improves blood sugar control and cardiovascular outcomes, with emerging benefits for liver and kidney disease", "Enormous, still-growing commercial demand — among the fastest-selling drug classes in history"],
+      "cons": ["GI side effects (nausea, vomiting) are common, especially at higher doses", "Requires ongoing, often lifelong use — weight typically returns after stopping", "Manufacturing has struggled to keep up with demand, leading to persistent supply shortages"],
+      "verdict": "The biggest commercial and public-health story in biopharma right now — genuinely transformative, but a chronic therapy, not a cure.",
+      "exampleDrugIds": ["semaglutide", "tirzepatide"]
     }
   ],
 
@@ -192,6 +204,10 @@
     { "id": "exondys51", "name": "Exondys 51", "company": "Sarepta", "year": 2016 },
     { "id": "onpattro", "name": "Onpattro", "company": "Alnylam", "year": 2018 },
     { "id": "givlaari", "name": "Givlaari", "company": "Alnylam", "year": 2019 },
-    { "id": "casgevy", "name": "Casgevy", "company": "Vertex/CRISPR Therapeutics", "year": 2023 }
+    { "id": "casgevy", "name": "Casgevy", "company": "Vertex/CRISPR Therapeutics", "year": 2023 },
+    { "id": "semaglutide", "name": "Semaglutide (Ozempic/Wegovy)", "company": "Novo Nordisk", "year": 2017 },
+    { "id": "tirzepatide", "name": "Tirzepatide (Mounjaro/Zepbound)", "company": "Eli Lilly", "year": 2022 },
+    { "id": "evolocumab", "name": "Evolocumab (Repatha)", "company": "Amgen", "year": 2015 },
+    { "id": "inclisiran", "name": "Inclisiran (Leqvio)", "company": "Novartis", "year": 2021 }
   ]
 }

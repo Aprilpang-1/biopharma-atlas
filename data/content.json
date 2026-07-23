@@ -23,8 +23,8 @@
     {
       "id": "targeted-mab",
       "name": "Targeted mAb",
-      "areas": ["oncology", "metabolic"],
-      "concept": "A lab-made antibody that recognizes one specific protein and blocks its function or flags the cell for immune destruction — from marking cancer cells for attack to neutralizing a protein that drives high cholesterol. One of biotech's most versatile and time-tested antibody formats, dating to the late 1990s.",
+      "areas": ["oncology", "metabolic", "immunology"],
+      "concept": "A lab-made antibody that recognizes one specific protein and blocks its function or flags the cell for immune destruction — from marking cancer cells for attack, to neutralizing a protein that drives high cholesterol, to depleting the immune cells that attack a patient's own joints in rheumatoid arthritis. One of biotech's most versatile and time-tested antibody formats, dating to the late 1990s.",
       "schematicParts": ["antibody", "target antigen"],
       "pros": ["Highly selective for its target, spares healthy tissue", "Better tolerated than conventional chemotherapy", "Can work through multiple mechanisms at once"],
       "cons": ["Only works if the target protein is present/accessible", "Large molecules can't reach some tissue sites (e.g. brain)", "Resistance or reduced response can develop over time"],
@@ -90,12 +90,12 @@
       "id": "anti-cytokine-mab",
       "name": "Anti-Cytokine mAb",
       "areas": ["immunology"],
-      "concept": "An antibody that neutralizes a single inflammatory messenger molecule (a cytokine like TNF-alpha) before it can trigger the immune system to attack the body's own tissue — dialing down chronic inflammation at its source.",
-      "schematicParts": ["antibody", "target cytokine (e.g. TNF-alpha)"],
+      "concept": "An antibody that neutralizes a single inflammatory messenger molecule (a cytokine like TNF-alpha or IL-17) before it can trigger the immune system to attack the body's own tissue — dialing down chronic inflammation at its source.",
+      "schematicParts": ["antibody", "target cytokine (e.g. TNF-alpha, IL-17)"],
       "pros": ["Highly effective at inducing remission in autoimmune disease", "Decades of real-world safety data (first approved 1998)", "Broad utility across rheumatoid arthritis, IBD, psoriasis, and more"],
       "cons": ["Increased risk of infection and reactivated latent infections", "Up to half of patients don't respond adequately", "High cost (~$20,000+/year) with risk of anti-drug antibodies reducing efficacy over time"],
       "verdict": "The founding biologic class for autoimmune disease — effective and well-proven, but not universally effective.",
-      "exampleDrugIds": ["infliximab", "adalimumab"]
+      "exampleDrugIds": ["infliximab", "adalimumab", "secukinumab"]
     },
     {
       "id": "jak-inhibitor",
@@ -107,6 +107,28 @@
       "cons": ["FDA boxed warning: higher risk of blood clots, heart events, and cancer in some patients", "Increased risk of shingles (herpes zoster) infection", "Requires ongoing monitoring (bloodwork, cardiovascular risk factors)"],
       "verdict": "Fast and convenient, but a more serious safety profile limits use in higher-risk patients.",
       "exampleDrugIds": ["tofacitinib", "upadacitinib"]
+    },
+    {
+      "id": "integrin-inhibitor",
+      "name": "Integrin Inhibitor",
+      "areas": ["immunology"],
+      "concept": "An antibody that blocks a docking protein (integrin) on immune cells, preventing them from leaving the bloodstream and migrating into inflamed tissue — instead of calming the immune system everywhere, it keeps the attack from ever reaching the gut or brain in the first place.",
+      "schematicParts": ["antibody", "integrin (e.g. alpha4beta7 or alpha4beta1)"],
+      "pros": ["Gut-selective options (e.g. vedolizumab) avoid whole-body immune suppression", "Strong efficacy in inflammatory bowel disease with a favorable long-term safety record", "Works by a mechanically different route than cytokine-blocking drugs, useful when those fail"],
+      "cons": ["Slower onset of action than some biologics", "Non-selective agents (e.g. natalizumab) carry a rare but serious brain infection risk (PML)", "Not effective for all autoimmune conditions - mostly gut- and CNS-focused"],
+      "verdict": "A 'roadblock' strategy instead of a 'ceasefire' - stops immune cells from reaching the target tissue rather than calming them down.",
+      "exampleDrugIds": ["vedolizumab", "natalizumab"]
+    },
+    {
+      "id": "fcrn-inhibitor",
+      "name": "FcRn Inhibitor",
+      "areas": ["immunology"],
+      "concept": "A drug that blocks the cellular 'recycling' receptor (FcRn) that normally keeps antibodies circulating in the blood for weeks — by shutting it off, the body's harmful self-attacking antibodies get flagged for destruction faster, quickly lowering the levels driving the disease.",
+      "schematicParts": ["FcRn blocker", "neonatal Fc receptor (FcRn)"],
+      "pros": ["Rapid reduction of pathogenic antibodies, fast symptom relief", "Targets the antibody clearance pathway itself rather than a single cytokine or cell type", "Growing list of approved indications beyond its first one (myasthenia gravis)"],
+      "cons": ["Also clears some beneficial antibodies, raising infection-risk questions with long-term use", "Requires repeat infusions or injections - not a one-time fix", "Still a young drug class (first approval 2021), real-world data still accumulating"],
+      "verdict": "A clever plumbing fix - drains out the harmful antibodies faster instead of stopping the immune system from making them.",
+      "exampleDrugIds": ["efgartigimod"]
     },
     {
       "id": "gene-therapy-aav",
@@ -173,6 +195,39 @@
       "cons": ["GI side effects (nausea, vomiting) are common, especially at higher doses", "Requires ongoing, often lifelong use — weight typically returns after stopping", "Manufacturing has struggled to keep up with demand, leading to persistent supply shortages"],
       "verdict": "The biggest commercial and public-health story in biopharma right now — genuinely transformative, but a chronic therapy, not a cure.",
       "exampleDrugIds": ["semaglutide", "tirzepatide"]
+    },
+    {
+      "id": "sglt2-inhibitor",
+      "name": "SGLT2 Inhibitor",
+      "areas": ["metabolic"],
+      "concept": "An oral pill that blocks a glucose transporter in the kidney, causing excess sugar to be flushed out in urine instead of reabsorbed into the blood — a mechanism discovered almost by accident that turned out to protect the heart and kidneys as much as it lowers blood sugar.",
+      "schematicParts": ["small molecule drug", "SGLT2 transporter (kidney proximal tubule)"],
+      "pros": ["Proven to reduce heart failure hospitalization and cardiovascular death, even in people without diabetes", "Slows progression of chronic kidney disease", "Oral dosing, with modest weight loss and blood pressure reduction as a bonus"],
+      "cons": ["Increased risk of genital and urinary tract infections", "Rare but serious risk of euglycemic diabetic ketoacidosis (normal blood sugar can mask the danger)", "Amputation warning on some labels, though largely tied to one drug in the class rather than the whole class"],
+      "verdict": "Started as a diabetes pill, became a heart-and-kidney protection drug — one of the best label-expansion stories in modern pharma.",
+      "exampleDrugIds": ["empagliflozin", "dapagliflozin"]
+    },
+    {
+      "id": "thr-beta-agonist",
+      "name": "THR-β Agonist",
+      "areas": ["metabolic"],
+      "concept": "A daily pill engineered to activate only the liver's thyroid hormone receptors, revving up fat metabolism inside liver cells to clear out the fat and scarring that build up in metabolic liver disease — without triggering the heart and bone side effects of activating thyroid hormone receptors everywhere else in the body.",
+      "schematicParts": ["small molecule drug", "thyroid hormone receptor-beta (liver-selective)"],
+      "pros": ["First-ever FDA-approved treatment for MASH (2024), the fastest-growing liver disease worldwide", "Liver-selective design avoids the classic risks of systemic thyroid hormone", "Improved liver fat, fibrosis, and cholesterol in pivotal trials"],
+      "cons": ["Only approved for moderate-to-advanced fibrosis, not earlier-stage disease", "Common GI side effects (diarrhea, nausea)", "Still new - long-term outcomes data (e.g. does it prevent cirrhosis/liver failure) still maturing"],
+      "verdict": "Opened an entirely new drug category for a disease that affects an estimated 1 in 3 adults with obesity - a genuine first-in-class launch.",
+      "exampleDrugIds": ["resmetirom"]
+    },
+    {
+      "id": "insulin-analog",
+      "name": "Insulin (Recombinant/Analog)",
+      "areas": ["metabolic"],
+      "concept": "A lab-made version of the hormone the pancreas normally makes to move sugar out of the blood and into cells — the first genetically engineered drug ever approved, and still the backbone of care for anyone whose body can't make enough insulin on its own.",
+      "schematicParts": ["recombinant insulin", "insulin receptor"],
+      "pros": ["The original proof that genetic engineering could mass-produce a human protein drug (1982)", "Life-saving and essentially irreplaceable for type 1 diabetes", "Modern analogs (fast-acting, long-acting) offer far more predictable, flexible dosing than older formulations"],
+      "cons": ["Requires injections or a pump - no oral form exists at scale", "Risk of hypoglycemia if dosing doesn't match food or activity", "Pricing controversy in the US despite the molecule being over 40 years old"],
+      "verdict": "The modality that launched the biotech industry - still essential, still evolving, still occasionally controversial on price.",
+      "exampleDrugIds": ["humulin", "lantus"]
     }
   ],
 
@@ -194,6 +249,10 @@
     { "id": "lutathera", "name": "Lutathera", "company": "Novartis", "year": 2018 },
     { "id": "infliximab", "name": "Infliximab (Remicade)", "company": "Janssen", "year": 1998 },
     { "id": "adalimumab", "name": "Adalimumab (Humira)", "company": "AbbVie", "year": 2002 },
+    { "id": "secukinumab", "name": "Secukinumab (Cosentyx)", "company": "Novartis", "year": 2015 },
+    { "id": "vedolizumab", "name": "Vedolizumab (Entyvio)", "company": "Takeda", "year": 2014 },
+    { "id": "natalizumab", "name": "Natalizumab (Tysabri)", "company": "Biogen", "year": 2004 },
+    { "id": "efgartigimod", "name": "Efgartigimod (Vyvgart)", "company": "argenx", "year": 2021 },
     { "id": "tofacitinib", "name": "Tofacitinib (Xeljanz)", "company": "Pfizer", "year": 2012 },
     { "id": "upadacitinib", "name": "Upadacitinib (Rinvoq)", "company": "AbbVie", "year": 2019 },
     { "id": "zolgensma", "name": "Zolgensma", "company": "Novartis", "year": 2019 },
@@ -208,6 +267,11 @@
     { "id": "semaglutide", "name": "Semaglutide (Ozempic/Wegovy)", "company": "Novo Nordisk", "year": 2017 },
     { "id": "tirzepatide", "name": "Tirzepatide (Mounjaro/Zepbound)", "company": "Eli Lilly", "year": 2022 },
     { "id": "evolocumab", "name": "Evolocumab (Repatha)", "company": "Amgen", "year": 2015 },
-    { "id": "inclisiran", "name": "Inclisiran (Leqvio)", "company": "Novartis", "year": 2021 }
+    { "id": "inclisiran", "name": "Inclisiran (Leqvio)", "company": "Novartis", "year": 2021 },
+    { "id": "empagliflozin", "name": "Empagliflozin (Jardiance)", "company": "Boehringer Ingelheim/Eli Lilly", "year": 2014 },
+    { "id": "dapagliflozin", "name": "Dapagliflozin (Farxiga)", "company": "AstraZeneca", "year": 2014 },
+    { "id": "resmetirom", "name": "Resmetirom (Rezdiffra)", "company": "Madrigal Pharmaceuticals", "year": 2024 },
+    { "id": "humulin", "name": "Humulin", "company": "Eli Lilly/Genentech", "year": 1982 },
+    { "id": "lantus", "name": "Insulin Glargine (Lantus)", "company": "Sanofi", "year": 2000 }
   ]
 }

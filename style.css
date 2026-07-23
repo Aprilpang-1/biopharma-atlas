@@ -255,6 +255,15 @@ header {
   transition: opacity 0.3s ease, r 0.15s ease;
 }
 
+.tone-dot {
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tone-dot.hidden-station {
+  opacity: 0;
+}
+
 .station-dot.hidden-station {
   opacity: 0;
   pointer-events: none;

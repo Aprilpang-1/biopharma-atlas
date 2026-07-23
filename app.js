@@ -7,26 +7,40 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 // Hand-tuned layout - station positions are presentational, not content,
 // so they live here rather than in content.json.
 const LAYOUT = {
-  viewBox: "0 0 1300 860",
+  viewBox: "-160 0 1460 860",
   linePaths: {
     // fully straight - ADC sits directly on this line
     oncology: "60,180 1140,180",
-    // starts right at ADC (no leftward stub) - a right-angle tick UP to sit
-    // above Oncology, then straight across to its own stations
-    immunology: "220,180 220,80 460,80 640,80",
-    // pure right-angle (Manhattan) staircase - no diagonals. Approaches
-    // RNAi Therapeutics vertically (from below) so it crosses Metabolic's
-    // horizontal approach at a single point instead of running alongside it
-    "rare-disease": "60,780 180,780 180,660 480,660 480,540 780,540 780,420 1080,420 1080,300",
-    // aligned straight down from Targeted mAb (same x) to GLP-1, then a
-    // clean right-angle turn across to Rare Disease (rnai-therapeutics)
-    metabolic: "60,180 60,420 780,420"
+    // runs parallel to (just above) Oncology from Targeted mAb to ADC -
+    // both are genuine interchanges. Offset (14px) chosen to match the
+    // visible gap between parallel lines on the NYC subway map reference,
+    // scaled to our 8px stroke width - then dips down to actually touch
+    // the ADC dot before turning up (JAK Inhibitor sits right at that
+    // right-angle corner), then straight across through the rest
+    immunology: "60,166 220,166 220,180 220,80 460,80 820,80 1000,80",
+    // pure right-angle (Manhattan) staircase - no diagonals. ASO sits
+    // directly under RNAi Therapeutics (same x), Enzyme Replacement sits
+    // where ASO used to be, and AAV anchors the line below Enzyme
+    // CRISPR sits on the same horizontal run as RNAi Therapeutics - no
+    // right-angle turn at the end, just a straight continuation
+    "rare-disease": "480,780 480,540 780,540 780,420 960,420",
+    // aligned straight down from Targeted mAb (same x) to GLP-1, forming a
+    // T-junction there: a spur left to SGLT2 Inhibitor, then straight
+    // across to the right through the rest of the line to Rare Disease
+    // (rnai-therapeutics)
+    metabolic: "60,180 60,420 -80,420 60,420 420,420 620,420 780,420"
   },
   areaLabelPos: {
     oncology: { x: 60, y: 130 },
-    immunology: { x: 750, y: 80 },
-    "rare-disease": { x: 60, y: 820 },
-    metabolic: { x: 60, y: 460 }
+    // x shifted left of FcRn's x:1000 so the legend's visual center lines
+    // up with FcRn Inhibitor's label below it (same reference spacing as
+    // Oncology -> Targeted mAb: 22px gap, legend above the station label)
+    immunology: { x: 953, y: 42 },
+    // x is shifted left of CRISPR's x:960 so the legend's visual center
+    // (badge + text, which render starting at x) lines up with CRISPR's
+    // label below it, which is true-centered via text-anchor:middle
+    "rare-disease": { x: 901, y: 355 },
+    metabolic: { x: -80, y: 460 }
   },
   stationPos: {
     "targeted-mab": { x: 60, y: 180 },
@@ -37,18 +51,33 @@ const LAYOUT = {
     "checkpoint-inhibitor": { x: 960, y: 180 },
     "radioligand-therapy": { x: 1140, y: 180 },
     "anti-cytokine-mab": { x: 460, y: 80 },
-    "jak-inhibitor": { x: 640, y: 80 },
-    "gene-therapy-aav": { x: 60, y: 780 },
-    "enzyme-replacement-therapy": { x: 180, y: 660 },
-    "aso": { x: 480, y: 540 },
+    "jak-inhibitor": { x: 220, y: 80 },
+    "gene-therapy-aav": { x: 480, y: 780 },
+    "enzyme-replacement-therapy": { x: 480, y: 540 },
+    "aso": { x: 780, y: 540 },
     "rnai-therapeutics": { x: 780, y: 420 },
-    "crispr-gene-editing": { x: 1080, y: 300 },
-    "glp1-agonist": { x: 60, y: 420 }
+    "crispr-gene-editing": { x: 960, y: 420 },
+    "glp1-agonist": { x: 60, y: 420 },
+    "sglt2-inhibitor": { x: -80, y: 420 },
+    "thr-beta-agonist": { x: 420, y: 420 },
+    "insulin-analog": { x: 620, y: 420 },
+    "integrin-inhibitor": { x: 820, y: 80 },
+    "fcrn-inhibitor": { x: 1000, y: 80 }
   },
   // stations sitting where a straight-above label would cross the line -
   // render their label below the dot, or offset sideways, instead
-  labelBelow: ["adc"],
-  labelOffsetX: { "glp1-agonist": 65 }
+  labelBelow: ["adc", "gene-therapy-aav", "aso"],
+  labelOffsetX: { "glp1-agonist": 65 },
+  // CRISPR's label centered directly under the Rare Disease legend, 50px
+  // gap between them (legend y:290, label default would land at y:360 -
+  // pulled up by 20 to land at 340)
+  labelOffsetY: { "targeted-mab": -12, "rnai-therapeutics": -10, "crispr-gene-editing": -13 },
+  // two small color-coded dots on a shared station, one per connecting line
+  twoToneStations: {
+    "targeted-mab": ["immunology", "oncology"],
+    "adc": ["immunology", "oncology"],
+    "rnai-therapeutics": ["metabolic", "rare-disease"]
+  }
 };
 
 var state = {
@@ -195,8 +224,17 @@ function parsePoints(pointsStr) {
 // points, like real transit maps - each interior corner is rounded with a
 // quadratic curve instead of a sharp angle. Radius is clamped per-corner
 // so it never exceeds half of either adjoining segment's length.
-function roundedPathD(points, radius) {
+//
+// A rounded corner always "cuts the corner" short of the true vertex - for
+// a normal turn by about radius*0.4, for a full U-turn spike by about
+// radius/2. When that vertex is a station's exact position, the cut can
+// leave a visible gap between the line and the station dot. So corners
+// that land exactly on a station (per stationPoints) use a much smaller
+// radius - just enough to stay smooth while guaranteeing the curve still
+// reaches into the dot - while pure routing bends keep the full radius.
+function roundedPathD(points, radius, stationPoints) {
   if (points.length < 2) return "";
+  var STATION_CORNER_RADIUS = 6;
   var d = "M " + points[0].x + " " + points[0].y + " ";
   for (var i = 1; i < points.length - 1; i++) {
     var prev = points[i - 1];
@@ -208,7 +246,9 @@ function roundedPathD(points, radius) {
     var d2x = next.x - curr.x, d2y = next.y - curr.y;
     var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
 
-    var r = Math.min(radius, len1 / 2, len2 / 2);
+    var isStation = stationPoints && stationPoints[curr.x + "," + curr.y];
+    var effRadius = isStation ? Math.min(radius, STATION_CORNER_RADIUS) : radius;
+    var r = Math.min(effRadius, len1 / 2, len2 / 2);
 
     var p1x = curr.x - (d1x / len1) * r;
     var p1y = curr.y - (d1y / len1) * r;
@@ -223,6 +263,17 @@ function roundedPathD(points, radius) {
   return d;
 }
 
+// Every station's {x,y} as a "x,y" lookup set, used by roundedPathD to
+// know which path vertices are real stations vs. pure routing bends.
+function buildStationPointSet() {
+  var set = {};
+  Object.keys(LAYOUT.stationPos).forEach(function (id) {
+    var p = LAYOUT.stationPos[id];
+    set[p.x + "," + p.y] = true;
+  });
+  return set;
+}
+
 var CORNER_RADIUS = 20;
 
 function buildMap(app) {
@@ -234,12 +285,14 @@ function buildMap(app) {
     fill: "#fdfdfb", class: "map-background"
   }));
 
+  var stationPoints = buildStationPointSet();
+
   state.data.areas.forEach(function (area) {
     var path = LAYOUT.linePaths[area.id];
     if (!path) return;
     var pts = parsePoints(path);
     var line = svgEl("path", {
-      d: roundedPathD(pts, CORNER_RADIUS),
+      d: roundedPathD(pts, CORNER_RADIUS, stationPoints),
       class: "line-path",
       stroke: area.color,
       fill: "none",
@@ -301,27 +354,77 @@ function buildMap(app) {
     })[0];
     var primaryColor = primaryArea ? primaryArea.color : "#333";
 
-    var dot = svgEl("circle", {
-      cx: pos.x,
-      cy: pos.y,
-      r: isInterchange ? 11 : 6,
-      class: "station-dot hidden-station" + (isInterchange ? " interchange-dot" : ""),
-      fill: "#fff",
-      stroke: isInterchange ? "#111" : primaryColor,
-      "stroke-width": isInterchange ? 4 : 3,
-      "data-station": mod.id
-    });
+    // Stations shared by two lines (Targeted mAb, ADC, RNAi Therapeutics)
+    // get a rounded-square marker sized to hold both color dots with a
+    // visible gap to the border - like the NYC subway map's interchange
+    // markers - instead of a plain circle that only reads as one line.
+    var twoTone = LAYOUT.twoToneStations && LAYOUT.twoToneStations[mod.id];
+    var dot;
+    if (twoTone) {
+      var sqW = 20, sqH = 32;
+      dot = svgEl("rect", {
+        x: pos.x - sqW / 2,
+        y: pos.y - sqH / 2,
+        width: sqW,
+        height: sqH,
+        rx: 10,
+        class: "station-dot hidden-station interchange-dot square-dot",
+        fill: "#fff",
+        stroke: "#111",
+        "stroke-width": 4,
+        "data-station": mod.id
+      });
+    } else {
+      dot = svgEl("circle", {
+        cx: pos.x,
+        cy: pos.y,
+        r: isInterchange ? 11 : 6,
+        class: "station-dot hidden-station" + (isInterchange ? " interchange-dot" : ""),
+        fill: "#fff",
+        stroke: isInterchange ? "#111" : primaryColor,
+        "stroke-width": isInterchange ? 4 : 3,
+        "data-station": mod.id
+      });
+    }
     dot.addEventListener("click", function (e) {
       e.stopPropagation();
       selectStation(mod.id);
     });
     svg.appendChild(dot);
 
+    // Two small color dots marking exactly which two lines meet at this
+    // station - like the NYC map's interchange color indicators - for the
+    // stations where two distinct lines visibly converge.
+    if (twoTone) {
+      var toneCenterY = pos.y;
+      var toneColors = twoTone.map(function (areaId) {
+        var a = state.data.areas.filter(function (ar) { return ar.id === areaId; })[0];
+        return a ? a.color : "#333";
+      });
+      toneColors.forEach(function (color, ti) {
+        var toneDot = svgEl("circle", {
+          cx: pos.x,
+          cy: toneCenterY + (ti === 0 ? -6 : 6),
+          r: 3.5,
+          fill: color,
+          class: "tone-dot hidden-station",
+          "data-station-tone": mod.id
+        });
+        svg.appendChild(toneDot);
+      });
+    }
+
     var lines = wrapLabel(mod.name);
     var labelBelow = LAYOUT.labelBelow && LAYOUT.labelBelow.indexOf(mod.id) !== -1;
+    // twoTone markers are a tall 32px pill, so labels placed below them need
+    // more clearance than the plain 12px-diameter circle used elsewhere.
+    var belowOffset = twoTone
+      ? (lines.length > 1 ? 40 : 22)
+      : (lines.length > 1 ? 30 : 16);
     var baseY = labelBelow
-      ? pos.y + (lines.length > 1 ? 70 : 22)
+      ? pos.y + belowOffset
       : pos.y - (lines.length > 1 ? 30 : 16);
+    baseY += (LAYOUT.labelOffsetY && LAYOUT.labelOffsetY[mod.id]) || 0;
     var labelX = pos.x + ((LAYOUT.labelOffsetX && LAYOUT.labelOffsetX[mod.id]) || 0);
     lines.forEach(function (lineText, i) {
       var label = svgEl("text", {
@@ -434,6 +537,7 @@ function applyFocusState() {
     var dot = svg.querySelector('[data-station="' + mod.id + '"]');
     var labels = svg.querySelectorAll('[data-station-label="' + mod.id + '"]');
     var sub = svg.querySelector('[data-station-sublabel="' + mod.id + '"]');
+    var tones = svg.querySelectorAll('[data-station-tone="' + mod.id + '"]');
 
     var isSelected = mod.id === state.selectedStation;
 
@@ -443,6 +547,9 @@ function applyFocusState() {
       el.classList.toggle("selected", isSelected);
     });
     if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);
+    tones.forEach(function (el) {
+      el.classList.toggle("hidden-station", !belongsToSelected);
+    });
 
     if (dot) dot.classList.toggle("selected", isSelected);
   });

@@ -1,43 +1,54 @@
-// Phase 5b: fixes station label overlap by widening spacing and wrapping
-// long modality names onto two lines.
+// Phase 7: NYC-subway-style redesign. All lines are routed on strict
+// 0/45/90-degree segments only (octilinear routing, like Jug Cerovic's
+// INAT-style transit maps) so the map reads as a real metro diagram.
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 // Hand-tuned layout - station positions are presentational, not content,
 // so they live here rather than in content.json.
 const LAYOUT = {
-  viewBox: "0 0 1300 820",
+  viewBox: "0 0 1300 860",
   linePaths: {
-    oncology: "60,150 190,150 220,250 250,150 400,150 580,150 780,150 1000,150 1220,150",
-    immunology: "140,350 220,250 340,350 420,350 600,350",
-    // independent diagonal, like a standalone metro line that never meets the others
-    "rare-disease": "60,760 350,690 640,620 930,550 1220,480",
-    // shares its start with Oncology (targeted-mab) and its end with Rare Disease (rnai-therapeutics)
-    metabolic: "60,150 250,480 930,550"
+    // fully straight - ADC sits directly on this line
+    oncology: "60,180 1140,180",
+    // starts right at ADC (no leftward stub) - a right-angle tick UP to sit
+    // above Oncology, then straight across to its own stations
+    immunology: "220,180 220,80 460,80 640,80",
+    // pure right-angle (Manhattan) staircase - no diagonals. Approaches
+    // RNAi Therapeutics vertically (from below) so it crosses Metabolic's
+    // horizontal approach at a single point instead of running alongside it
+    "rare-disease": "60,780 180,780 180,660 480,660 480,540 780,540 780,420 1080,420 1080,300",
+    // aligned straight down from Targeted mAb (same x) to GLP-1, then a
+    // clean right-angle turn across to Rare Disease (rnai-therapeutics)
+    metabolic: "60,180 60,420 780,420"
   },
   areaLabelPos: {
-    oncology: { x: 60, y: 120 },
-    immunology: { x: 140, y: 400 },
-    "rare-disease": { x: 60, y: 795 },
-    metabolic: { x: 130, y: 460 }
+    oncology: { x: 60, y: 130 },
+    immunology: { x: 750, y: 80 },
+    "rare-disease": { x: 60, y: 820 },
+    metabolic: { x: 60, y: 460 }
   },
   stationPos: {
-    "targeted-mab": { x: 60, y: 150 },
-    "adc": { x: 220, y: 250 },
-    "bispecific-ab": { x: 400, y: 150 },
-    "cell-therapy": { x: 580, y: 150 },
-    "small-molecule": { x: 780, y: 150 },
-    "checkpoint-inhibitor": { x: 1000, y: 150 },
-    "radioligand-therapy": { x: 1220, y: 150 },
-    "anti-cytokine-mab": { x: 420, y: 350 },
-    "jak-inhibitor": { x: 600, y: 350 },
-    "gene-therapy-aav": { x: 60, y: 760 },
-    "enzyme-replacement-therapy": { x: 350, y: 690 },
-    "aso": { x: 640, y: 620 },
-    "rnai-therapeutics": { x: 930, y: 550 },
-    "crispr-gene-editing": { x: 1220, y: 480 },
-    "glp1-agonist": { x: 250, y: 480 }
-  }
+    "targeted-mab": { x: 60, y: 180 },
+    "adc": { x: 220, y: 180 },
+    "bispecific-ab": { x: 420, y: 180 },
+    "cell-therapy": { x: 600, y: 180 },
+    "small-molecule": { x: 780, y: 180 },
+    "checkpoint-inhibitor": { x: 960, y: 180 },
+    "radioligand-therapy": { x: 1140, y: 180 },
+    "anti-cytokine-mab": { x: 460, y: 80 },
+    "jak-inhibitor": { x: 640, y: 80 },
+    "gene-therapy-aav": { x: 60, y: 780 },
+    "enzyme-replacement-therapy": { x: 180, y: 660 },
+    "aso": { x: 480, y: 540 },
+    "rnai-therapeutics": { x: 780, y: 420 },
+    "crispr-gene-editing": { x: 1080, y: 300 },
+    "glp1-agonist": { x: 60, y: 420 }
+  },
+  // stations sitting where a straight-above label would cross the line -
+  // render their label below the dot, or offset sideways, instead
+  labelBelow: ["adc"],
+  labelOffsetX: { "glp1-agonist": 65 }
 };
 
 var state = {
@@ -172,16 +183,66 @@ function wrapLabel(name) {
   return [name.slice(0, splitAt), name.slice(splitAt + 1)];
 }
 
+// Parses a "x,y x,y ..." points string into [{x,y}, ...].
+function parsePoints(pointsStr) {
+  return pointsStr.trim().split(/\s+/).map(function (p) {
+    var xy = p.split(",");
+    return { x: parseFloat(xy[0]), y: parseFloat(xy[1]) };
+  });
+}
+
+// Builds a smooth-cornered SVG path "d" string from straight-segment
+// points, like real transit maps - each interior corner is rounded with a
+// quadratic curve instead of a sharp angle. Radius is clamped per-corner
+// so it never exceeds half of either adjoining segment's length.
+function roundedPathD(points, radius) {
+  if (points.length < 2) return "";
+  var d = "M " + points[0].x + " " + points[0].y + " ";
+  for (var i = 1; i < points.length - 1; i++) {
+    var prev = points[i - 1];
+    var curr = points[i];
+    var next = points[i + 1];
+
+    var d1x = curr.x - prev.x, d1y = curr.y - prev.y;
+    var len1 = Math.sqrt(d1x * d1x + d1y * d1y);
+    var d2x = next.x - curr.x, d2y = next.y - curr.y;
+    var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
+
+    var r = Math.min(radius, len1 / 2, len2 / 2);
+
+    var p1x = curr.x - (d1x / len1) * r;
+    var p1y = curr.y - (d1y / len1) * r;
+    var p2x = curr.x + (d2x / len2) * r;
+    var p2y = curr.y + (d2y / len2) * r;
+
+    d += "L " + p1x + " " + p1y + " ";
+    d += "Q " + curr.x + " " + curr.y + " " + p2x + " " + p2y + " ";
+  }
+  var last = points[points.length - 1];
+  d += "L " + last.x + " " + last.y + " ";
+  return d;
+}
+
+var CORNER_RADIUS = 20;
+
 function buildMap(app) {
   var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
+
+  var vbParts = LAYOUT.viewBox.split(" ");
+  svg.appendChild(svgEl("rect", {
+    x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3],
+    fill: "#fdfdfb", class: "map-background"
+  }));
 
   state.data.areas.forEach(function (area) {
     var path = LAYOUT.linePaths[area.id];
     if (!path) return;
-    var line = svgEl("polyline", {
-      points: path,
+    var pts = parsePoints(path);
+    var line = svgEl("path", {
+      d: roundedPathD(pts, CORNER_RADIUS),
       class: "line-path",
       stroke: area.color,
+      fill: "none",
       "data-area": area.id
     });
     line.addEventListener("click", function () {
@@ -194,12 +255,10 @@ function buildMap(app) {
     var pos = LAYOUT.areaLabelPos[area.id];
     if (!pos) return;
 
-    var badge = svgEl("rect", {
-      x: pos.x - 26,
-      y: pos.y - 16,
-      width: 20,
-      height: 20,
-      rx: 5,
+    var badge = svgEl("circle", {
+      cx: pos.x - 16,
+      cy: pos.y - 6,
+      r: 11,
       fill: area.color,
       class: "area-badge",
       "data-area": area.id
@@ -245,9 +304,11 @@ function buildMap(app) {
     var dot = svgEl("circle", {
       cx: pos.x,
       cy: pos.y,
-      r: isInterchange ? 10 : 7,
+      r: isInterchange ? 11 : 6,
       class: "station-dot hidden-station" + (isInterchange ? " interchange-dot" : ""),
-      fill: isInterchange ? "#fff" : primaryColor,
+      fill: "#fff",
+      stroke: isInterchange ? "#111" : primaryColor,
+      "stroke-width": isInterchange ? 4 : 3,
       "data-station": mod.id
     });
     dot.addEventListener("click", function (e) {
@@ -257,10 +318,14 @@ function buildMap(app) {
     svg.appendChild(dot);
 
     var lines = wrapLabel(mod.name);
-    var baseY = pos.y - (lines.length > 1 ? 30 : 16);
+    var labelBelow = LAYOUT.labelBelow && LAYOUT.labelBelow.indexOf(mod.id) !== -1;
+    var baseY = labelBelow
+      ? pos.y + (lines.length > 1 ? 70 : 22)
+      : pos.y - (lines.length > 1 ? 30 : 16);
+    var labelX = pos.x + ((LAYOUT.labelOffsetX && LAYOUT.labelOffsetX[mod.id]) || 0);
     lines.forEach(function (lineText, i) {
       var label = svgEl("text", {
-        x: pos.x,
+        x: labelX,
         y: baseY + i * 15,
         "text-anchor": "middle",
         class: "station-label hidden-station",
@@ -282,6 +347,18 @@ function buildMap(app) {
       svg.appendChild(sub);
     }
   });
+
+  svg.appendChild(svgEl("rect", {
+    x: parseFloat(vbParts[0]) + 2,
+    y: parseFloat(vbParts[1]) + 2,
+    width: parseFloat(vbParts[2]) - 4,
+    height: parseFloat(vbParts[3]) - 4,
+    fill: "none",
+    stroke: "#111",
+    "stroke-width": 4,
+    rx: 6,
+    class: "map-frame"
+  }));
 
   app.innerHTML = "";
   app.appendChild(svg);

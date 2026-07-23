@@ -241,12 +241,13 @@ header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
+  border: 2px solid #111;
 }
 
 .station-dot {
@@ -259,19 +260,27 @@ header {
   pointer-events: none;
 }
 
-.station-dot:hover {
-  r: 9;
+.station-dot:not(.interchange-dot):hover {
+  r: 8;
+}
+
+.interchange-dot:hover {
+  r: 13;
 }
 
 .station-dot.selected {
   r: 10px;
-  stroke: #222;
+  stroke: #111;
   stroke-width: 3;
+}
+
+.interchange-dot.selected {
+  r: 14px;
 }
 
 .interchange-dot {
   fill: #fff;
-  stroke: #222;
+  stroke: #111;
   stroke-width: 4;
 }
 

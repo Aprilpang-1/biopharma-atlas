@@ -602,12 +602,6 @@ function buildStationPointSet() {
 
 var CORNER_RADIUS = 20;
 
-// Interchange stations (shared by 2+ lines) render as a rounded pill. Set
-// this to true to bring back the small colored dot per sharing line plus
-// the dashed line segments connecting each dot to the pill border - off by
-// April's request, so the pill shows as a clean empty outline.
-var SHOW_INTERCHANGE_DOTS = false;
-
 function buildMap(app) {
   var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
@@ -699,7 +693,7 @@ function buildMap(app) {
         width: pillW,
         height: pillH,
         rx: 10,
-        class: "station-dot hidden-station interchange-dot square-dot",
+        class: "station-dot interchange-dot square-dot",
         fill: "#fff",
         stroke: "#111",
         "stroke-width": 4,
@@ -742,7 +736,7 @@ function buildMap(app) {
       // the white fill, so the connection from border to dot (and through
       // to the opposite border, for lines that pass all the way through)
       // is visible rather than implied.
-      var crossings = SHOW_INTERCHANGE_DOTS && LAYOUT.pillCrossings && LAYOUT.pillCrossings[mod.id];
+      var crossings = LAYOUT.pillCrossings && LAYOUT.pillCrossings[mod.id];
       if (crossings) {
         // inset 2px from the raw rect edge (half the border's 4px stroke
         // width) so the dashes stay inside the white fill and don't draw
@@ -771,19 +765,17 @@ function buildMap(app) {
         });
       }
 
-      if (SHOW_INTERCHANGE_DOTS) {
-        toneColors.forEach(function (color, ti) {
-          var toneDot = svgEl("circle", {
-            cx: pos.x,
-            cy: pos.y + toneStart + ti * dotSpacing,
-            r: 3.5,
-            fill: color,
-            class: "tone-dot hidden-station",
-            "data-station-tone": mod.id
-          });
-          svg.appendChild(toneDot);
+      toneColors.forEach(function (color, ti) {
+        var toneDot = svgEl("circle", {
+          cx: pos.x,
+          cy: pos.y + toneStart + ti * dotSpacing,
+          r: 3.5,
+          fill: color,
+          class: "tone-dot hidden-station",
+          "data-station-tone": mod.id
         });
-      }
+        svg.appendChild(toneDot);
+      });
     }
 
     var lines = wrapLabel(mod.name);
@@ -982,7 +974,14 @@ function applyFocusState() {
 
     var isSelected = mod.id === state.selectedStation;
 
-    if (dot) dot.classList.toggle("hidden-station", !belongsToSelected);
+    // Interchange pills (square-dot) stay visible on the map at all times,
+    // even in the "All lines" overview with nothing selected - only their
+    // inner tone-dots/crossing-dashes (below) are gated by line selection.
+    // Plain single-line circles keep the original behavior: hidden until
+    // their line is selected.
+    if (dot && !dot.classList.contains("square-dot")) {
+      dot.classList.toggle("hidden-station", !belongsToSelected);
+    }
     labels.forEach(function (el) {
       el.classList.toggle("hidden-station", !belongsToSelected);
       el.classList.toggle("selected", isSelected);

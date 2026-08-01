@@ -198,7 +198,7 @@ header {
 }
 
 .area-badge-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   fill: #fff;
   pointer-events: none;
@@ -334,7 +334,7 @@ header {
 }
 
 .station-label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   fill: #222;
   pointer-events: none;
@@ -342,7 +342,7 @@ header {
 }
 
 .station-label.selected {
-  font-size: 18px;
+  font-size: 21px;
   fill: #111;
 }
 

@@ -914,12 +914,94 @@ function renderLegend() {
   el.innerHTML = "<span class=\"legend-label\">Lines:</span>" + items;
 }
 
+// Clicking a line zooms the map's viewBox toward that line (its full
+// routed path, bends included, plus its badge) so it dominates the frame,
+// while the existing fade/hidden-station styling recedes everything else.
+// Padding ratio (0.12x the line's own extent, floor of 3.75% of the full
+// map's width) matches the "tight" framing April approved from the preview
+// widget - loose/medium framings were tried and rejected in favor of this.
+var mapZoomRAF = null;
+
+function fullViewBoxArray() {
+  return LAYOUT.viewBox.split(" ").map(parseFloat);
+}
+
+function computeLineZoomViewBox(areaId) {
+  var pathStr = LAYOUT.linePaths[areaId];
+  var pts = [];
+  if (pathStr) {
+    pathStr.trim().split(/\s+/).forEach(function (pair) {
+      var xy = pair.split(",");
+      pts.push([parseFloat(xy[0]), parseFloat(xy[1])]);
+    });
+  }
+  var badge = LAYOUT.areaLabelPos[areaId];
+  if (badge) pts.push([badge.x, badge.y]);
+  if (!pts.length) return null;
+
+  var xs = pts.map(function (p) { return p[0]; });
+  var ys = pts.map(function (p) { return p[1]; });
+  var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+  var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+
+  var full = fullViewBoxArray();
+  var minPad = full[2] * 0.0375;
+  var padX = Math.max((maxX - minX) * 0.12, minPad);
+  var padY = Math.max((maxY - minY) * 0.12, minPad);
+  minX -= padX; maxX += padX; minY -= padY; maxY += padY;
+
+  var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  var w = maxX - minX, h = maxY - minY;
+  var targetAspect = full[2] / full[3];
+  if (w / h > targetAspect) {
+    h = w / targetAspect;
+  } else {
+    w = h * targetAspect;
+  }
+
+  // Clamp to the full map's own size - a line whose padded extent already
+  // approaches the whole map (e.g. Cardiovascular, which sprawls almost
+  // edge-to-edge) would otherwise aspect-correct to something BIGGER than
+  // the overview itself, i.e. zoom out instead of in. If that happens, cap
+  // both dimensions proportionally so the "zoomed" view never exceeds the
+  // full map.
+  if (w > full[2] || h > full[3]) {
+    var scale = Math.min(full[2] / w, full[3] / h);
+    w *= scale;
+    h *= scale;
+  }
+
+  return [cx - w / 2, cy - h / 2, w, h];
+}
+
+function animateMapViewBox(target) {
+  var svg = document.getElementById("subway-map");
+  if (!svg || typeof requestAnimationFrame !== "function") {
+    if (svg) svg.setAttribute("viewBox", target.join(" "));
+    return;
+  }
+  if (mapZoomRAF) cancelAnimationFrame(mapZoomRAF);
+  var start = svg.getAttribute("viewBox").split(" ").map(parseFloat);
+  var t0 = performance.now();
+  var dur = 350;
+  function step(now) {
+    var t = Math.min(1, (now - t0) / dur);
+    var e = 1 - Math.pow(1 - t, 3);
+    var cur = start.map(function (v, i) { return v + (target[i] - v) * e; });
+    svg.setAttribute("viewBox", cur.join(" "));
+    mapZoomRAF = t < 1 ? requestAnimationFrame(step) : null;
+  }
+  mapZoomRAF = requestAnimationFrame(step);
+}
+
 function selectArea(areaId) {
   state.selectedArea = areaId;
   state.selectedStation = null;
   state.detailView = null;
   state.comparing = false;
   applyFocusState();
+  var zoomTarget = computeLineZoomViewBox(areaId);
+  if (zoomTarget) animateMapViewBox(zoomTarget);
   document.getElementById("back-btn").classList.remove("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
   var areaObj = state.data.areas.filter(function (a) { return a.id === areaId; })[0];
@@ -933,6 +1015,7 @@ function backToOverview() {
   state.detailView = null;
   state.comparing = false;
   applyFocusState();
+  animateMapViewBox(fullViewBoxArray());
   document.getElementById("back-btn").classList.add("hidden");
   document.getElementById("detail-panel").classList.add("hidden");
   document.getElementById("subtitle").textContent = "Tap a line to explore its modalities";
@@ -953,6 +1036,7 @@ function applyFocusState() {
   svg.querySelectorAll(".line-path").forEach(function (el) {
     var isActive = !selectedArea || el.dataset.area === selectedArea;
     el.classList.toggle("faded", !isActive);
+    el.classList.toggle("line-focused", !!selectedArea && isActive);
   });
 
   svg.querySelectorAll(".area-label").forEach(function (el) {
@@ -984,6 +1068,7 @@ function applyFocusState() {
     }
     labels.forEach(function (el) {
       el.classList.toggle("hidden-station", !belongsToSelected);
+      el.classList.toggle("line-focused", !!belongsToSelected);
       el.classList.toggle("selected", isSelected);
     });
     if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);

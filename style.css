@@ -172,12 +172,16 @@ header {
   stroke-linecap: round;
   stroke-linejoin: round;
   cursor: pointer;
-  transition: stroke 0.3s ease, opacity 0.3s ease;
+  transition: stroke 0.3s ease, opacity 0.3s ease, stroke-width 0.3s ease;
 }
 
 .line-path.faded {
   stroke: #ccc !important;
   opacity: 0.6;
+}
+
+.line-path.line-focused {
+  stroke-width: 11;
 }
 
 .area-label {
@@ -339,6 +343,10 @@ header {
   fill: #222;
   pointer-events: none;
   transition: opacity 0.3s ease, font-size 0.15s ease;
+}
+
+.station-label.line-focused {
+  font-size: 19px;
 }
 
 .station-label.selected {

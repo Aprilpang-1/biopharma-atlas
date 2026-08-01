@@ -214,6 +214,37 @@ header {
   opacity: 0.7;
 }
 
+.legend-box {
+  pointer-events: none;
+}
+
+.legend-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  fill: #111;
+}
+
+.legend-box-swatch {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.legend-box-swatch-text {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #fff;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.legend-box-name {
+  font-size: 9px;
+  font-weight: 600;
+  fill: #333;
+  cursor: pointer;
+  pointer-events: all;
+}
+
 #map-legend {
   display: flex;
   flex-wrap: wrap;
@@ -261,6 +292,15 @@ header {
 }
 
 .tone-dot.hidden-station {
+  opacity: 0;
+}
+
+.pill-crossing {
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.pill-crossing.hidden-station {
   opacity: 0;
 }
 

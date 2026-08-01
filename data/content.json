@@ -5,14 +5,20 @@
     { "id": "oncology", "name": "Oncology", "color": "#E63946", "abbr": "ON" },
     { "id": "immunology", "name": "Immunology", "color": "#457B9D", "abbr": "IM" },
     { "id": "rare-disease", "name": "Rare Disease", "color": "#6A4C93", "abbr": "RD" },
-    { "id": "metabolic", "name": "Metabolic", "color": "#F4A261", "abbr": "MB" }
+    { "id": "metabolic", "name": "Metabolic", "color": "#F4A261", "abbr": "MB" },
+    { "id": "neuro", "name": "Neurology", "color": "#2A9D8F", "abbr": "NE" },
+    { "id": "cardiovascular", "name": "Cardiovascular", "color": "#495057", "abbr": "CV" },
+    { "id": "ophthalmology", "name": "Ophthalmology", "color": "#D81159", "abbr": "OP" },
+    { "id": "hematology", "name": "Hematology", "color": "#7B2D26", "abbr": "HE" },
+    { "id": "respiratory", "name": "Respiratory", "color": "#6B8E23", "abbr": "RS" },
+    { "id": "infectious-disease", "name": "Vaccines / Infectious Disease", "color": "#D9A404", "abbr": "ID" }
   ],
 
   "modalities": [
     {
       "id": "adc",
       "name": "ADC (Antibody-Drug Conjugate)",
-      "areas": ["oncology", "immunology"],
+      "areas": ["immunology", "oncology"],
       "concept": "An antibody guides a toxic drug directly to cancer cells via a chemical linker — like a guided missile.",
       "schematicParts": ["antibody", "linker", "drug"],
       "pros": ["Targeted, spares healthy tissue", "Very potent payloads", "Proven blockbusters"],
@@ -23,24 +29,24 @@
     {
       "id": "targeted-mab",
       "name": "Targeted mAb",
-      "areas": ["oncology", "metabolic", "immunology"],
-      "concept": "A lab-made antibody that recognizes one specific protein and blocks its function or flags the cell for immune destruction — from marking cancer cells for attack, to neutralizing a protein that drives high cholesterol, to depleting the immune cells that attack a patient's own joints in rheumatoid arthritis. One of biotech's most versatile and time-tested antibody formats, dating to the late 1990s.",
+      "areas": ["infectious-disease", "immunology", "oncology", "cardiovascular", "metabolic"],
+      "concept": "A lab-made antibody that recognizes one specific protein and blocks its function or flags it for destruction — from marking cancer cells for attack, to neutralizing a protein that drives high cholesterol, to depleting the immune cells that attack a patient's own joints in rheumatoid arthritis, to binding a virus itself to prevent infection before it ever takes hold. One of biotech's most versatile and time-tested antibody formats, dating to the late 1990s.",
       "schematicParts": ["antibody", "target antigen"],
       "pros": ["Highly selective for its target, spares healthy tissue", "Better tolerated than conventional chemotherapy", "Can work through multiple mechanisms at once"],
       "cons": ["Only works if the target protein is present/accessible", "Large molecules can't reach some tissue sites (e.g. brain)", "Resistance or reduced response can develop over time"],
       "verdict": "The foundational modality — proven and safe, but often needs a combination partner for full effect.",
-      "exampleDrugIds": ["rituximab", "trastuzumab", "evolocumab"]
+      "exampleDrugIds": ["rituximab", "trastuzumab", "evolocumab", "beyfortus"]
     },
     {
       "id": "bispecific-ab",
       "name": "Bispecific Antibody",
-      "areas": ["oncology"],
+      "areas": ["oncology", "hematology"],
       "concept": "An antibody engineered to grab two different targets at once — a cancer cell on one arm, a T-cell on the other — physically dragging the immune cell in to attack, with no need to engineer the patient's own cells.",
       "schematicParts": ["arm 1: tumor antigen", "arm 2: T-cell (CD3)"],
       "pros": ["Off-the-shelf — no need to harvest/engineer patient cells like CAR-T", "Can achieve CAR-T-like response rates in blood cancers", "Fast-growing class: multiple approvals since 2014"],
       "cons": ["Cytokine release syndrome and neurotoxicity risk, similar to CAR-T", "Short half-life often requires frequent or continuous infusion", "Efficacy in solid tumors still limited"],
       "verdict": "A cheaper, more scalable alternative to cell therapy — a fast-growing modality class.",
-      "exampleDrugIds": ["blinatumomab", "mosunetuzumab"]
+      "exampleDrugIds": ["blinatumomab", "mosunetuzumab", "emicizumab"]
     },
     {
       "id": "cell-therapy",
@@ -89,13 +95,13 @@
     {
       "id": "anti-cytokine-mab",
       "name": "Anti-Cytokine mAb",
-      "areas": ["immunology"],
-      "concept": "An antibody that neutralizes a single inflammatory messenger molecule (a cytokine like TNF-alpha or IL-17) before it can trigger the immune system to attack the body's own tissue — dialing down chronic inflammation at its source.",
-      "schematicParts": ["antibody", "target cytokine (e.g. TNF-alpha, IL-17)"],
-      "pros": ["Highly effective at inducing remission in autoimmune disease", "Decades of real-world safety data (first approved 1998)", "Broad utility across rheumatoid arthritis, IBD, psoriasis, and more"],
+      "areas": ["immunology", "respiratory"],
+      "concept": "An antibody that neutralizes a single inflammatory messenger molecule (a cytokine like TNF-alpha, IL-17, or IL-5) before it can trigger the immune system to attack the body's own tissue or over-activate — dialing down chronic inflammation at its source. The same targeting strategy that quiets autoimmune disease also works on the eosinophils that drive severe asthma flares.",
+      "schematicParts": ["antibody", "target cytokine (e.g. TNF-alpha, IL-17, IL-5)"],
+      "pros": ["Highly effective at inducing remission in autoimmune disease", "Decades of real-world safety data (first approved 1998)", "Broad utility across rheumatoid arthritis, IBD, psoriasis, severe eosinophilic asthma, and more"],
       "cons": ["Increased risk of infection and reactivated latent infections", "Up to half of patients don't respond adequately", "High cost (~$20,000+/year) with risk of anti-drug antibodies reducing efficacy over time"],
       "verdict": "The founding biologic class for autoimmune disease — effective and well-proven, but not universally effective.",
-      "exampleDrugIds": ["infliximab", "adalimumab", "secukinumab"]
+      "exampleDrugIds": ["infliximab", "adalimumab", "secukinumab", "mepolizumab", "benralizumab"]
     },
     {
       "id": "jak-inhibitor",
@@ -133,13 +139,13 @@
     {
       "id": "gene-therapy-aav",
       "name": "Gene Therapy (AAV)",
-      "areas": ["rare-disease"],
+      "areas": ["rare-disease", "neuro", "hematology", "ophthalmology"],
       "concept": "A modified, harmless virus delivers a correct copy of a faulty gene directly into a patient's cells, letting the body permanently produce the protein it was missing — a one-time treatment aimed at fixing the root cause.",
       "schematicParts": ["AAV viral vector", "corrected gene"],
       "pros": ["Potentially curative with a single treatment", "Restores function in previously untreatable genetic diseases", "Long-term expression in non-dividing cells (e.g. neurons, muscle)"],
       "cons": ["Extremely expensive ($850K–$2.1M per treatment)", "Immune response to the viral vector can cause liver toxicity or block re-dosing", "Limited cargo size — can't deliver very large genes"],
       "verdict": "The closest thing to a cure in rare disease — genuinely transformative, but priced and dosed like it.",
-      "exampleDrugIds": ["zolgensma", "luxturna"]
+      "exampleDrugIds": ["zolgensma", "luxturna", "hemgenix"]
     },
     {
       "id": "enzyme-replacement-therapy",
@@ -155,18 +161,18 @@
     {
       "id": "aso",
       "name": "Antisense Oligonucleotide (ASO)",
-      "areas": ["rare-disease"],
+      "areas": ["rare-disease", "neuro"],
       "concept": "A short synthetic strand of genetic material binds to a patient's faulty RNA and corrects how it's read — either skipping a broken section or blocking production of a harmful protein — without altering the DNA itself.",
       "schematicParts": ["synthetic oligonucleotide", "target RNA"],
       "pros": ["Reversible — acts on RNA, not permanent DNA changes", "Proven to dramatically improve outcomes (e.g. infant survival in spinal muscular atrophy)", "Can be redesigned quickly for a new genetic target"],
       "cons": ["Usually requires repeated dosing (e.g. spinal injections every 4 months for Spinraza)", "Only treats the specific mutation/exon it's designed for", "Delivery to some tissues remains difficult"],
       "verdict": "A precise, reversible fix at the RNA level — practical, but not a one-and-done treatment.",
-      "exampleDrugIds": ["spinraza", "exondys51"]
+      "exampleDrugIds": ["spinraza", "exondys51", "tofersen"]
     },
     {
       "id": "rnai-therapeutics",
       "name": "RNAi Therapeutics",
-      "areas": ["rare-disease", "metabolic"],
+      "areas": ["cardiovascular", "metabolic", "rare-disease"],
       "concept": "A small RNA molecule hijacks the cell's own gene-silencing machinery to destroy the messenger RNA of a disease-causing gene before it can be turned into protein — like deleting the instructions before they're read.",
       "schematicParts": ["siRNA molecule", "RNA-induced silencing complex"],
       "pros": ["Long-lasting effect from infrequent dosing (as rare as twice a year)", "High specificity — sequence-matched to the target gene", "Well-tolerated safety profile so far across approved drugs"],
@@ -177,7 +183,7 @@
     {
       "id": "crispr-gene-editing",
       "name": "CRISPR Gene Editing",
-      "areas": ["rare-disease"],
+      "areas": ["rare-disease", "hematology"],
       "concept": "A patient's own cells are removed, their DNA is precisely edited using CRISPR molecular scissors to correct or disable the disease-causing sequence, then infused back — a permanent edit rather than a temporary patch.",
       "schematicParts": ["CRISPR/Cas9 scissors", "patient's own edited cells"],
       "pros": ["First-ever approved therapy to directly edit human DNA (2023)", "Potentially one-time, curative treatment", "Strong early real-world results, no serious adverse events reported so far"],
@@ -199,7 +205,7 @@
     {
       "id": "sglt2-inhibitor",
       "name": "SGLT2 Inhibitor",
-      "areas": ["metabolic"],
+      "areas": ["metabolic", "cardiovascular"],
       "concept": "An oral pill that blocks a glucose transporter in the kidney, causing excess sugar to be flushed out in urine instead of reabsorbed into the blood — a mechanism discovered almost by accident that turned out to protect the heart and kidneys as much as it lowers blood sugar.",
       "schematicParts": ["small molecule drug", "SGLT2 transporter (kidney proximal tubule)"],
       "pros": ["Proven to reduce heart failure hospitalization and cardiovascular death, even in people without diabetes", "Slows progression of chronic kidney disease", "Oral dosing, with modest weight loss and blood pressure reduction as a bonus"],
@@ -228,6 +234,149 @@
       "cons": ["Requires injections or a pump - no oral form exists at scale", "Risk of hypoglycemia if dosing doesn't match food or activity", "Pricing controversy in the US despite the molecule being over 40 years old"],
       "verdict": "The modality that launched the biotech industry - still essential, still evolving, still occasionally controversial on price.",
       "exampleDrugIds": ["humulin", "lantus"]
+    },
+    {
+      "id": "anti-amyloid-mab",
+      "name": "Anti-Amyloid mAb",
+      "areas": ["neuro"],
+      "concept": "An antibody is engineered to recognize and clear amyloid-beta plaques — sticky protein clumps in the brain believed to drive Alzheimer's disease — the first drug class to target the disease's underlying biology instead of just easing symptoms.",
+      "schematicParts": ["antibody", "amyloid-beta plaque"],
+      "pros": ["First drugs shown to modestly slow cognitive decline, not just treat symptoms", "Validates decades of amyloid-hypothesis research after many prior failures", "Multiple approved options now on the market"],
+      "cons": ["Requires regular MRI monitoring for brain swelling/bleeding (ARIA)", "Benefit is real but modest — not a cure or reversal", "Needs early diagnosis plus genetic testing, limiting who qualifies"],
+      "verdict": "A genuine scientific breakthrough after 20 years of failed Alzheimer's trials — but a modest, high-maintenance one.",
+      "exampleDrugIds": ["lecanemab", "donanemab", "aducanumab"]
+    },
+    {
+      "id": "anti-cgrp-therapy",
+      "name": "Anti-CGRP Therapy",
+      "areas": ["neuro"],
+      "concept": "Blocks calcitonin gene-related peptide (CGRP) or its receptor — a molecule that widens blood vessels and transmits pain signals during a migraine — using either an injectable antibody for prevention or a small-molecule pill for acute and preventive use.",
+      "schematicParts": ["CGRP molecule", "antibody or small-molecule blocker"],
+      "pros": ["First migraine-specific mechanism after decades of repurposed drugs (beta blockers, antidepressants)", "Far better tolerated than older preventives — no major weight gain or cognitive fog", "Both injectable and oral pill options available"],
+      "cons": ["Expensive compared to generic older preventives", "Doesn't work for a meaningful share of patients", "Long-term cardiovascular safety still being monitored, since CGRP normally helps dilate blood vessels"],
+      "verdict": "A precision rebuild of migraine treatment around the actual biology, not a repurposed side effect.",
+      "exampleDrugIds": ["erenumab", "rimegepant", "fremanezumab"]
+    },
+    {
+      "id": "anticoagulant-doac",
+      "name": "Anticoagulant (DOAC)",
+      "areas": ["cardiovascular"],
+      "concept": "A pill blocks a specific clotting factor in the blood — either factor Xa or thrombin — preventing dangerous clots from forming in the heart or veins, without the food interactions and constant blood monitoring the decades-old alternative (warfarin) required.",
+      "schematicParts": ["small molecule drug", "clotting factor (Xa or thrombin)"],
+      "pros": ["No routine blood monitoring needed, unlike warfarin", "Fewer food and drug interactions than warfarin", "Proven to prevent stroke in atrial fibrillation and to treat/prevent blood clots (DVT/PE)"],
+      "cons": ["No cheap, widely available test to confirm the drug is working, unlike warfarin's INR", "Bleeding risk, with reversal agents not universally available for every drug in the class", "More expensive than generic warfarin"],
+      "verdict": "Replaced a 70-year-old drug (warfarin) across most of medicine in about a decade — one of cardiology's cleanest modality transitions.",
+      "exampleDrugIds": ["apixaban", "rivaroxaban", "dabigatran"]
+    },
+    {
+      "id": "arni-heart-failure",
+      "name": "ARNI (Heart Failure)",
+      "areas": ["cardiovascular"],
+      "concept": "A twice-daily pill combines two mechanisms in one molecule — blocking a hormone that constricts blood vessels while boosting a separate hormone that relaxes them and helps the body shed excess fluid — to ease the strain on a heart that can no longer pump effectively.",
+      "schematicParts": ["neprilysin inhibitor", "angiotensin receptor blocker"],
+      "pros": ["First heart failure drug shown to beat the prior gold-standard (an ACE inhibitor) on mortality", "Reduces hospitalization as well as death", "Also approved for a form of heart failure (preserved ejection fraction) with few other options"],
+      "cons": ["More expensive than the generic ACE inhibitors it's replacing", "Requires a washout period when switching from an ACE inhibitor, due to a dangerous swelling risk if combined", "Twice-daily dosing versus once-daily alternatives"],
+      "verdict": "The first heart failure drug in decades to beat, not just match, the standard of care.",
+      "exampleDrugIds": ["entresto"]
+    },
+    {
+      "id": "anti-vegf-therapy",
+      "name": "Anti-VEGF Therapy",
+      "areas": ["ophthalmology"],
+      "concept": "An injected antibody blocks VEGF, the growth factor that drives abnormal, leaky blood vessels to form under the retina in wet macular degeneration — turning a common cause of blindness into a manageable chronic disease.",
+      "schematicParts": ["antibody or fusion protein", "VEGF molecule"],
+      "pros": ["Prevents blindness that was previously untreatable for most patients", "Newer agents allow injections as infrequently as quarterly instead of monthly", "Decades of real-world safety data across hundreds of millions of doses"],
+      "cons": ["Requires a needle injected directly into the eye, repeated indefinitely", "Doesn't restore vision already lost, only prevents further loss in most patients", "Treatment burden and cost add up over a lifetime of chronic dosing"],
+      "verdict": "Arguably the highest-value modality in medicine per dose — a single drug class that rewrote the prognosis for the leading cause of blindness in older adults.",
+      "exampleDrugIds": ["ranibizumab", "aflibercept", "faricimab"]
+    },
+    {
+      "id": "complement-inhibitor-ga",
+      "name": "Complement Inhibitor (Geographic Atrophy)",
+      "areas": ["ophthalmology"],
+      "concept": "An injected drug blocks a piece of the complement system — part of the immune system's \"seek and destroy\" machinery — that otherwise attacks retinal cells in advanced dry macular degeneration, slowing the spread of vision-robbing blind spots.",
+      "schematicParts": ["complement inhibitor (pegylated peptide)", "complement protein (C3 or C5)"],
+      "pros": ["First-ever approved treatments for geographic atrophy, a disease with zero prior drug options", "Slows lesion growth by roughly 15-25% versus no treatment", "Two different complement targets (C3 and C5) now available"],
+      "cons": ["Slows progression but doesn't restore vision already lost or stop it entirely", "Small but real risk of converting dry to wet AMD as a side effect", "Requires monthly-to-every-other-month injections indefinitely"],
+      "verdict": "A genuine first-in-class breakthrough for a disease that had no treatment at all — but a modest one that manages decline rather than reversing it.",
+      "exampleDrugIds": ["pegcetacoplan", "avacincaptad-pegol"]
+    },
+    {
+      "id": "dry-eye-immunomodulator",
+      "name": "Dry Eye Immunomodulator",
+      "areas": ["ophthalmology"],
+      "concept": "An eye drop calms the low-grade immune inflammation on the eye's surface that damages tear-producing glands in chronic dry eye disease — restoring the eye's own tear production instead of just adding artificial lubrication on top.",
+      "schematicParts": ["small molecule or peptide drug", "immune cell surface protein (e.g. calcineurin, LFA-1)"],
+      "pros": ["Treats the underlying inflammation rather than just masking dryness like artificial tears", "Long real-world track record (first approved 2003)", "Multiple mechanisms now available for patients who don't respond to one"],
+      "cons": ["Can take weeks to months of daily use before symptoms noticeably improve", "Burning/stinging on application is a common reason patients stop", "Doesn't work for everyone — response rates are moderate"],
+      "verdict": "Turned dry eye from a condition managed with drops alone into one with real anti-inflammatory treatment options — modest but genuine relief for a very common complaint.",
+      "exampleDrugIds": ["restasis", "xiidra"]
+    },
+    {
+      "id": "complement-inhibitor-pnh",
+      "name": "Complement Inhibitor (PNH)",
+      "areas": ["hematology"],
+      "concept": "An antibody blocks C5, a protein in the immune system's complement cascade, stopping it from destroying red blood cells in paroxysmal nocturnal hemoglobinuria — a rare disorder where the immune system attacks the patient's own blood cells.",
+      "schematicParts": ["antibody", "complement protein C5"],
+      "pros": ["First treatment ever for a disease that was previously often fatal within a decade of diagnosis", "Established, long track record since 2007", "Newer versions extend dosing from every 2 weeks out to monthly or longer"],
+      "cons": ["Increases risk of meningococcal infection, requiring vaccination before starting", "Requires lifelong ongoing infusions", "Among the most expensive drugs in the world per patient-year"],
+      "verdict": "Turned an often-fatal rare blood disease into a manageable chronic condition — one of biotech's clearest before-and-after stories.",
+      "exampleDrugIds": ["eculizumab"]
+    },
+    {
+      "id": "cftr-modulator",
+      "name": "CFTR Modulator",
+      "areas": ["respiratory"],
+      "concept": "A small-molecule pill that corrects the folding and function of CFTR, a chloride channel protein that's misshapen in cystic fibrosis — restoring the channel's ability to move salt and water across cell membranes and thin out the thick mucus that clogs the lungs.",
+      "schematicParts": ["small molecule drug", "CFTR protein (chloride channel)"],
+      "pros": ["Addresses the root genetic defect rather than just symptoms", "2026 label expansion now covers ~95% of all CF patients in the US", "Turned a historically fatal childhood disease into a near-normal-lifespan condition for most patients"],
+      "cons": ["Among the most expensive chronic medications in the world (~$300,000+/year)", "Doesn't help the small subset of patients whose mutations produce no CFTR protein at all", "Boxed warning for liver injury, requiring ongoing monitoring"],
+      "verdict": "One of modern medicine's clearest genetic-defect-correction success stories — most CF patients now live near-normal lifespans.",
+      "exampleDrugIds": ["trikafta"]
+    },
+    {
+      "id": "mrna-vaccine",
+      "name": "mRNA Vaccine",
+      "areas": ["infectious-disease"],
+      "concept": "A lipid nanoparticle carries a strand of mRNA coding for a piece of a virus (like the spike protein) into cells, which read the instructions and build that piece themselves — training the immune system to recognize and fight the real virus without ever using live or weakened pathogen.",
+      "schematicParts": ["mRNA strand", "lipid nanoparticle carrier"],
+      "pros": ["Can be designed and manufactured in weeks once a pathogen's genetic sequence is known, not months or years", "Proved highly effective at preventing severe disease during the COVID-19 pandemic", "Platform can be quickly re-targeted at new variants or entirely new pathogens"],
+      "cons": ["Requires ultra-cold storage and distribution logistics for some formulations", "Protection against infection (vs. severe disease) wanes over months, often requiring boosters", "Rare but real risk of myocarditis, mostly in younger males"],
+      "verdict": "The pandemic-era platform that proved mRNA could go from sequence to shots-in-arms faster than any vaccine technology before it.",
+      "exampleDrugIds": ["comirnaty", "spikevax"]
+    },
+    {
+      "id": "antiviral-daa",
+      "name": "Direct-Acting Antiviral",
+      "areas": ["infectious-disease"],
+      "concept": "A small-molecule pill blocks a specific protein a virus needs to copy itself — interrupting the virus's replication machinery directly, rather than just easing symptoms while the immune system fights it off on its own.",
+      "schematicParts": ["small molecule drug", "viral replication protein (e.g. NS5A/NS5B)"],
+      "pros": ["Cured hepatitis C in ~95%+ of patients, turning a chronic, often-fatal liver disease into a solvable problem in as little as 8-12 weeks", "Oral pill, no injections required", "Since become the template for other antiviral pills, including for COVID-19"],
+      "cons": ["Hepatitis C regimens were priced extremely high at launch (~$80,000-$95,000 for a full course), sparking a national debate over drug pricing", "Doesn't prevent reinfection — only treats existing infection", "Different viruses need different, purpose-built DAAs — no single pill works broadly"],
+      "verdict": "Turned hepatitis C from a lifelong disease managed with harsh side effects into an outright cure — one of the biggest wins in modern pharmacology.",
+      "exampleDrugIds": ["harvoni"]
+    },
+    {
+      "id": "antifibrotic-ipf",
+      "name": "Antifibrotic (IPF)",
+      "areas": ["respiratory"],
+      "concept": "A small-molecule pill interferes with the growth factor signals that drive scar tissue (fibrosis) to form in the lungs, slowing the stiffening and scarring process in idiopathic pulmonary fibrosis — a progressive disease where healthy lung tissue is gradually replaced by scar tissue.",
+      "schematicParts": ["small molecule drug", "fibrotic growth factor pathway"],
+      "pros": ["First drugs ever shown to slow IPF progression, cutting the rate of lung function decline by up to half", "Oral pill, taken at home", "One (nintedanib) has since expanded to other progressive fibrosing lung diseases beyond IPF"],
+      "cons": ["Doesn't reverse existing scarring or cure the disease, only slows its progression", "Common GI side effects (diarrhea, nausea) lead some patients to stop", "Patients still eventually progress to needing a lung transplant in many cases"],
+      "verdict": "Turned IPF from a disease with no treatment options into one where progression can meaningfully be slowed — though not stopped or reversed.",
+      "exampleDrugIds": ["ofev"]
+    },
+    {
+      "id": "anti-tslp-biologic",
+      "name": "Anti-TSLP Biologic",
+      "areas": ["respiratory"],
+      "concept": "An antibody blocks TSLP, an 'alarmin' signal released by airway cells at the very top of the inflammatory cascade — shutting down asthma inflammation further upstream than antibodies that target IL-5 or other downstream cytokines, which is why it works across a broader range of asthma patients regardless of their specific inflammatory profile.",
+      "schematicParts": ["antibody", "TSLP (epithelial alarmin cytokine)"],
+      "pros": ["First severe-asthma biologic effective regardless of eosinophil count or allergic status, broadening who can benefit", "Significantly reduces asthma exacerbations in clinical trials", "Once-monthly at-home injection"],
+      "cons": ["Still doesn't help every patient — meaningful minority see limited benefit", "Newer to market (2021) with a shorter real-world safety track record than older biologics", "High cost typical of specialty biologics"],
+      "verdict": "Moved severe asthma treatment upstream — the broadest-acting biologic yet for a disease that used to require narrowing down a patient's exact inflammatory subtype first.",
+      "exampleDrugIds": ["tezspire"]
     }
   ],
 
@@ -272,6 +421,36 @@
     { "id": "dapagliflozin", "name": "Dapagliflozin (Farxiga)", "company": "AstraZeneca", "year": 2014 },
     { "id": "resmetirom", "name": "Resmetirom (Rezdiffra)", "company": "Madrigal Pharmaceuticals", "year": 2024 },
     { "id": "humulin", "name": "Humulin", "company": "Eli Lilly/Genentech", "year": 1982 },
-    { "id": "lantus", "name": "Insulin Glargine (Lantus)", "company": "Sanofi", "year": 2000 }
+    { "id": "lantus", "name": "Insulin Glargine (Lantus)", "company": "Sanofi", "year": 2000 },
+    { "id": "lecanemab", "name": "Lecanemab (Leqembi)", "company": "Eisai/Biogen", "year": 2023 },
+    { "id": "donanemab", "name": "Donanemab (Kisunla)", "company": "Eli Lilly", "year": 2024 },
+    { "id": "aducanumab", "name": "Aducanumab (Aduhelm)", "company": "Biogen", "year": 2021 },
+    { "id": "erenumab", "name": "Erenumab (Aimovig)", "company": "Amgen/Novartis", "year": 2018 },
+    { "id": "rimegepant", "name": "Rimegepant (Nurtec ODT)", "company": "Pfizer/Biohaven", "year": 2020 },
+    { "id": "fremanezumab", "name": "Fremanezumab (Ajovy)", "company": "Teva", "year": 2018 },
+    { "id": "tofersen", "name": "Tofersen (Qalsody)", "company": "Biogen/Ionis", "year": 2023 },
+    { "id": "apixaban", "name": "Apixaban (Eliquis)", "company": "Bristol Myers Squibb/Pfizer", "year": 2012 },
+    { "id": "rivaroxaban", "name": "Rivaroxaban (Xarelto)", "company": "Bayer/Janssen", "year": 2011 },
+    { "id": "dabigatran", "name": "Dabigatran (Pradaxa)", "company": "Boehringer Ingelheim", "year": 2010 },
+    { "id": "entresto", "name": "Sacubitril/Valsartan (Entresto)", "company": "Novartis", "year": 2015 },
+    { "id": "ranibizumab", "name": "Ranibizumab (Lucentis)", "company": "Genentech/Roche", "year": 2006 },
+    { "id": "aflibercept", "name": "Aflibercept (Eylea)", "company": "Regeneron", "year": 2011 },
+    { "id": "faricimab", "name": "Faricimab (Vabysmo)", "company": "Genentech/Roche", "year": 2022 },
+    { "id": "pegcetacoplan", "name": "Pegcetacoplan (Syfovre)", "company": "Apellis Pharmaceuticals", "year": 2023 },
+    { "id": "avacincaptad-pegol", "name": "Avacincaptad Pegol (Izervay)", "company": "Iveric Bio/Astellas", "year": 2023 },
+    { "id": "hemgenix", "name": "Etranacogene Dezaparvovec (Hemgenix)", "company": "CSL Behring/uniQure", "year": 2022 },
+    { "id": "emicizumab", "name": "Emicizumab (Hemlibra)", "company": "Genentech/Roche", "year": 2017 },
+    { "id": "eculizumab", "name": "Eculizumab (Soliris)", "company": "Alexion", "year": 2007 },
+    { "id": "trikafta", "name": "Trikafta", "company": "Vertex", "year": 2019 },
+    { "id": "mepolizumab", "name": "Mepolizumab (Nucala)", "company": "GSK", "year": 2015 },
+    { "id": "benralizumab", "name": "Benralizumab (Fasenra)", "company": "AstraZeneca", "year": 2017 },
+    { "id": "comirnaty", "name": "Comirnaty", "company": "Pfizer/BioNTech", "year": 2021 },
+    { "id": "spikevax", "name": "Spikevax", "company": "Moderna", "year": 2022 },
+    { "id": "harvoni", "name": "Harvoni", "company": "Gilead", "year": 2014 },
+    { "id": "beyfortus", "name": "Beyfortus (nirsevimab)", "company": "Sanofi/AstraZeneca", "year": 2023 },
+    { "id": "ofev", "name": "Ofev (nintedanib)", "company": "Boehringer Ingelheim", "year": 2014 },
+    { "id": "tezspire", "name": "Tezspire (tezepelumab)", "company": "AstraZeneca/Amgen", "year": 2021 },
+    { "id": "restasis", "name": "Restasis (cyclosporine)", "company": "Allergan", "year": 2003 },
+    { "id": "xiidra", "name": "Xiidra (lifitegrast)", "company": "Novartis", "year": 2016 }
   ]
 }

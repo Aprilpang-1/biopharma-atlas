@@ -198,7 +198,7 @@ header {
 }
 
 .area-badge-text {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   fill: #fff;
   pointer-events: none;
@@ -219,7 +219,7 @@ header {
 }
 
 .legend-box-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   fill: #111;
 }
@@ -230,7 +230,7 @@ header {
 }
 
 .legend-box-swatch-text {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   fill: #fff;
   text-anchor: middle;
@@ -238,7 +238,7 @@ header {
 }
 
 .legend-box-name {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   fill: #333;
   cursor: pointer;
@@ -334,7 +334,7 @@ header {
 }
 
 .station-label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   fill: #222;
   pointer-events: none;
@@ -342,7 +342,7 @@ header {
 }
 
 .station-label.selected {
-  font-size: 16px;
+  font-size: 18px;
   fill: #111;
 }
 

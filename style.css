@@ -1,3 +1,19 @@
+/* 2026-08-02 (v2): the first attempt at this (a max-height:850px media
+   query capping the map) didn't work on April's laptop - guessing a fixed
+   viewport-height breakpoint is fragile (display scaling, browser chrome
+   height, and OS all shift what "850px" actually means in CSS pixels).
+   Replaced with a structural fix instead of a guess: the whole page is
+   now a column flexbox exactly 100vh tall. Every section EXCEPT the map
+   (header, toolbar, legend, detail panel) keeps its natural size; the map
+   is the one flexible piece and shrinks to absorb whatever's left. This
+   works by construction on any screen - there's no number to get wrong -
+   and only falls back to page scrolling in the rare case where even a
+   minimum-size map plus everything else still doesn't fit (see
+   #app's min-height below). */
+html {
+  height: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   max-width: 1500px;
@@ -5,6 +21,23 @@ body {
   padding: 2rem 1.5rem;
   color: #222;
   line-height: 1.5;
+  box-sizing: border-box;
+  height: 100vh;
+  height: 100dvh; /* mobile browsers: excludes the address bar's space,
+                     so this doesn't shrink the page 100vh's static value
+                     would (older browsers without dvh support just keep
+                     the 100vh line above) */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+header,
+#toolbar,
+.scroll-hint,
+#map-legend,
+#detail-panel {
+  flex: 0 0 auto;
 }
 
 header {
@@ -145,42 +178,34 @@ header {
   color: #666;
 }
 
+/* #app is the flexible flex child (see body rule above) - flex:1 1 auto
+   lets it shrink below its content size, min-height:0 is required for
+   that shrink to actually be allowed inside a flex column (browsers
+   default flex items to min-height:auto, which otherwise blocks
+   shrinking below content size), and the explicit floor further down
+   (220px) keeps it from disappearing entirely if the window is very
+   short. Once #app's height is resolved by the flex layout, the SVG
+   inside it (see #subway-map) fits itself within that using both
+   max-width and max-height, so it always occupies exactly the space
+   that's actually left over - no viewport-size guessing involved. */
 #app {
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   margin: 0 -1.5rem;
   padding: 0 1.5rem;
+  flex: 1 1 auto;
+  min-height: 220px;
+  display: flex;
+  align-items: flex-start;
 }
 
 #subway-map {
   width: 100%;
   min-width: 900px;
   height: auto;
+  max-height: 100%;
   display: block;
-}
-
-/* 2026-08-02: on a wide-but-short window (typical laptop - plenty of
-   horizontal screen width, limited vertical height once browser chrome is
-   subtracted), the rule above scales the map's HEIGHT purely off its
-   WIDTH, with no regard for how tall the viewport actually is. On a wide
-   laptop window the map can render 650-700px tall, pushing the detail
-   panel (and its Example Drugs / Pros-Cons buttons) below the fold even
-   though a taller monitor window has room to spare. Capping the map's
-   height to a share of the viewport's height on shorter screens lets it
-   shrink to fit - width then follows automatically from the SVG's own
-   aspect ratio, exactly like a responsive image with both max-width and
-   max-height set. Scoped to short viewports only (via max-height, not
-   max-width) so tall monitors keep today's full-width map unchanged. */
-@media (max-height: 850px) {
-  #subway-map {
-    /* drop the 900px floor here too - on a short viewport we want the
-       max-height cap to fully govern the size, even if that means the
-       map (and its horizontal-scroll fallback below) ends up narrower
-       than 900px, rather than the floor fighting the cap and leaving the
-       map at its old, too-tall size */
-    min-width: 0;
-    max-height: 52vh;
-  }
 }
 
 .scroll-hint {

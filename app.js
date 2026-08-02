@@ -310,10 +310,31 @@ const LAYOUT = {
     "crispr-gene-editing": 2,
     "sglt2-inhibitor": 4,
     "dry-eye-immunomodulator": -12,
-    "antifibrotic-ipf": 51,
+    // 2026-08-02 (round 5): April clicked directly into each station
+    // (not just its line) and found these 4 touching their own dot's
+    // *selected*-state ring, which balloons to r:10 on click (CSS
+    // .station-dot.selected) - a size none of the earlier passes
+    // checked, since they only ever tested the resting r:6 dot.
+    // Antifibrotic (IPF) also had its rare-disease-line gap tighten
+    // further once the click-enlarged 21px font was factored in.
+    "antifibrotic-ipf": 95,
     // 2026-08-01: label/line-proximity pass - see labelOffsetY comment
     // below for the fix rationale, applies equally to these X shifts.
-    "small-molecule": -26,
+    // 2026-08-02 (round 6): re-checking with a corrected overlap test (see
+    // complement-inhibitor-pnh note below) found "(Kinase Inhibitor)" was
+    // actually being sliced straight through by Cardiovascular's own
+    // vertical line at x:700 - every earlier pass missed this because it
+    // only ever measured distance to the box's corners/edges, never
+    // checked whether a line ran straight through the box's interior.
+    // Shifted right, clear of x:700, rather than left (would need a much
+    // bigger move to clear the line on that side instead).
+    // 2026-08-02 (round 7): back to 0 - April had the label dropped down to
+    // just "Kinase" / "Inhibitor" (no more "Small Molecule" wording, see
+    // wrapLabel's special case) and centered on its own dot, which is
+    // narrow enough now to clear the CV line, the Checkpoint Inhibitor
+    // label to its right, and the Cell Therapy label to its left, all at
+    // once without needing any horizontal shift.
+    "small-molecule": 0,
     "anti-cytokine-mab": -44,
     // 2026-08-01 (round 2): April found more label/line collisions by
     // eye after the first pass, this time including a few where the
@@ -323,7 +344,11 @@ const LAYOUT = {
     // bounding-box check, this time also checking against every area
     // badge's circle and each label's own connecting line beyond the
     // small radius immediately at the dot.
-    "complement-inhibitor-pnh": -8,
+    // 2026-08-02 (round 6): 0 - now that the label is split into 3 short
+    // rows (see wrapLabel's special case + labelOffsetY note below), a
+    // centered position clears Hematology's own vertical line on both
+    // sides with margin, no horizontal shift needed at all.
+    "complement-inhibitor-pnh": 0,
     "anti-amyloid-mab": -33,
     "mrna-vaccine": -89,
     "antiviral-daa": -91,
@@ -365,12 +390,17 @@ const LAYOUT = {
     "anti-cytokine-mab": 17,
     "integrin-inhibitor": 5,
     "gene-therapy-aav": -12,
-    "enzyme-replacement-therapy": 48,
+    "enzyme-replacement-therapy": 16,
     "rnai-therapeutics": 102,
     "crispr-gene-editing": 7,
     "sglt2-inhibitor": 4,
-    "dry-eye-immunomodulator": 69,
-    "antifibrotic-ipf": 40,
+    "dry-eye-immunomodulator": 89,
+    "antifibrotic-ipf": 28,
+    // 2026-08-02 (round 7): -8 - small nudge up off the dot now that the
+    // label is just two short rows ("Kinase" / "Inhibitor") sitting
+    // centered on top of it, clear of the CV line and both neighboring
+    // stations' labels.
+    "small-molecule": -8,
     // 2026-08-01: label/line-proximity pass - April flagged RNAi
     // Therapeutics and ASO sitting too close to a passing line when their
     // line is zoomed in (font-size grows to 19/21px but the label's
@@ -389,7 +419,9 @@ const LAYOUT = {
     // own vertical line runs right past the label, not just near the dot)
     // and Anti-Amyloid mAb (squeezed between its area badge above and its
     // own dot below).
-    "complement-inhibitor-pnh": -9,
+    // 2026-08-02 (round 6): unchanged from round 5's -17 - only offsetX
+    // and the wrapLabel split changed for this station this round.
+    "complement-inhibitor-pnh": -17,
     "anti-amyloid-mab": 15,
     "mrna-vaccine": 23,
     "antiviral-daa": 29,
@@ -585,6 +617,28 @@ function svgEl(tag, attrs) {
 // horizontally. Short names stay on one line.
 function wrapLabel(name) {
   if (name.length <= 14) return [name];
+
+  // 2026-08-02: Complement Inhibitor (PNH) sits right next to Hematology's
+  // own vertical line - even fully clear of its own dot, the plain 2-line
+  // wrap ("Complement Inhibitor" / "(PNH)") is wide enough at the enlarged
+  // click-in size that it has to straddle the line, one side or the other.
+  // Splitting the first line into two shorter rows narrows every row
+  // enough to sit fully clear on one side, per April's explicit request.
+  if (name === "Complement Inhibitor (PNH)") {
+    return ["Complement", "Inhibitor", "(PNH)"];
+  }
+
+  // 2026-08-02 (round 7): Small Molecule (Kinase Inhibitor) sits in a
+  // tight corridor between Cardiovascular's own line and the neighboring
+  // Immune Checkpoint Inhibitor station's label - April asked to drop the
+  // "Small Molecule" part from the map label entirely and keep only
+  // "Kinase Inhibitor", as two short rows so it's narrow enough to clear
+  // both neighbors (the full name still shows in the station's detail
+  // panel via mod.name, unaffected - this only changes what's drawn on
+  // the map).
+  if (name === "Small Molecule (Kinase Inhibitor)") {
+    return ["Kinase", "Inhibitor"];
+  }
 
   var parenIdx = name.indexOf(" (");
   if (parenIdx !== -1) {

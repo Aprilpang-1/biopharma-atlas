@@ -223,7 +223,7 @@ header {
 }
 
 .legend-box-title {
-  font-size: 14px;
+  font-size: 18.9px;
   font-weight: 700;
   fill: #111;
 }
@@ -234,7 +234,7 @@ header {
 }
 
 .legend-box-swatch-text {
-  font-size: 9px;
+  font-size: 12.15px;
   font-weight: 700;
   fill: #fff;
   text-anchor: middle;
@@ -242,7 +242,7 @@ header {
 }
 
 .legend-box-name {
-  font-size: 10px;
+  font-size: 13.5px;
   font-weight: 600;
   fill: #333;
   cursor: pointer;

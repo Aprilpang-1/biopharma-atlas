@@ -602,6 +602,11 @@ function buildStationPointSet() {
 
 var CORNER_RADIUS = 20;
 
+// Base vertical gap (SVG units) between wrapped label lines at the
+// station-label's resting 16px font-size. See updateLabelLineSpacing()
+// below for how this scales up when a label's font-size grows.
+var LABEL_LINE_GAP = 15;
+
 function buildMap(app) {
   var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
@@ -800,16 +805,29 @@ function buildMap(app) {
     // would sit if placed below (e.g. ARNI above its dot vs. DOAC below).
     var baseY = labelBelow
       ? pos.y + clearance
-      : pos.y - clearance - (lines.length - 1) * 15;
+      : pos.y - clearance - (lines.length - 1) * LABEL_LINE_GAP;
     baseY += (LAYOUT.labelOffsetY && LAYOUT.labelOffsetY[mod.id]) || 0;
     var labelX = pos.x + ((LAYOUT.labelOffsetX && LAYOUT.labelOffsetX[mod.id]) || 0);
+    // The line NEAREST the dot (line 0 for "below" labels, the last line
+    // for "above" labels - see the comment above) is the anchor: its
+    // position must never move, since it's what's spatially tied to the
+    // dot. Every other line is stored as a signed distance (in line-count,
+    // not pixels) from that anchor, so updateLabelLineSpacing() can redraw
+    // just the far line(s) at whatever gap the current font-size calls for
+    // (base/line-focused/selected) without disturbing the anchor line.
+    var anchorY = labelBelow ? baseY : baseY + (lines.length - 1) * LABEL_LINE_GAP;
+    var dir = labelBelow ? 1 : -1;
     lines.forEach(function (lineText, i) {
+      var dist = labelBelow ? i : (lines.length - 1 - i);
       var label = svgEl("text", {
         x: labelX,
-        y: baseY + i * 15,
+        y: anchorY + dir * dist * LABEL_LINE_GAP,
         "text-anchor": "middle",
         class: "station-label hidden-station",
-        "data-station-label": mod.id
+        "data-station-label": mod.id,
+        "data-anchor-y": anchorY,
+        "data-dist": dist,
+        "data-dir": dir
       });
       label.textContent = lineText;
       svg.appendChild(label);
@@ -849,30 +867,39 @@ function buildMap(app) {
 // Single consolidated legend box (bottom-left, like a real transit map's
 // corner legend) mapping every abbreviation shown on the map to its full
 // area name - since the map itself now only shows abbreviations inline.
-var MAP_LEGEND_BOX = { x: 1480, y: 880, w: 400, h: 130 };
+// Legend box scale - April compared Current/Medium/Large against the real
+// map (animated preview) and picked Medium (1.35x). Anchored to the same
+// bottom-right corner margin the box has always used (20px from the map's
+// right edge, 10px from the bottom), growing up-and-left as it scales.
+var LEGEND_SCALE = 1.35;
+var MAP_LEGEND_BOX = { w: 400 * LEGEND_SCALE, h: 130 * LEGEND_SCALE };
+MAP_LEGEND_BOX.x = 1880 - MAP_LEGEND_BOX.w;
+MAP_LEGEND_BOX.y = 1010 - MAP_LEGEND_BOX.h;
+
 function renderMapLegendBox(svg) {
   var box = MAP_LEGEND_BOX;
+  var s = LEGEND_SCALE;
   svg.appendChild(svgEl("rect", {
     x: box.x, y: box.y, width: box.w, height: box.h,
-    rx: 8, fill: "#fdfdfb", stroke: "#111", "stroke-width": 2,
+    rx: 8 * s, fill: "#fdfdfb", stroke: "#111", "stroke-width": 2 * s,
     class: "legend-box"
   }));
   svg.appendChild(svgEl("text", {
-    x: box.x + 10, y: box.y + 14,
+    x: box.x + 10 * s, y: box.y + 14 * s,
     class: "legend-box-title"
   })).textContent = "Lines";
 
-  var padding = 10;
+  var padding = 10 * s;
   var colW = (box.w - padding * 2) / 2;
-  var rowH = 18;
-  var rowsStartY = box.y + 32;
+  var rowH = 18 * s;
+  var rowsStartY = box.y + 32 * s;
   state.data.areas.forEach(function (area, i) {
     var col = i < 5 ? 0 : 1;
     var row = i % 5;
-    var cx = box.x + padding + 8 + col * colW;
+    var cx = box.x + padding + 8 * s + col * colW;
     var cy = rowsStartY + row * rowH;
     var swatch = svgEl("circle", {
-      cx: cx, cy: cy, r: 7,
+      cx: cx, cy: cy, r: 7 * s,
       fill: area.color,
       class: "legend-box-swatch",
       "data-area": area.id
@@ -881,7 +908,7 @@ function renderMapLegendBox(svg) {
     svg.appendChild(swatch);
 
     var swatchText = svgEl("text", {
-      x: cx, y: cy + 3,
+      x: cx, y: cy + 3 * s,
       "text-anchor": "middle",
       class: "legend-box-swatch-text",
       "data-area": area.id
@@ -890,7 +917,7 @@ function renderMapLegendBox(svg) {
     svg.appendChild(swatchText);
 
     var nameText = svgEl("text", {
-      x: cx + 13, y: cy + 3,
+      x: cx + 13 * s, y: cy + 3 * s,
       class: "legend-box-name",
       "data-area": area.id
     });
@@ -1029,6 +1056,27 @@ function backToStationList() {
   document.getElementById("detail-panel").classList.add("hidden");
 }
 
+// Multi-line station labels (see LABEL_LINE_GAP / data-anchor-y etc. set
+// at creation time above) need a bigger gap between lines whenever their
+// font-size grows, or the two lines start to overlap - font-size alone
+// doesn't affect the y position an SVG <text> was already placed at. The
+// gaps below (22/24) are tuned to the .line-focused (19px) and .selected
+// (21px) font-sizes in style.css - if those font-sizes ever change, these
+// should be re-tuned to match. Confirmed against April's before/after
+// preview animation.
+function updateLabelLineSpacing(labels) {
+  labels.forEach(function (el) {
+    var dist = parseFloat(el.dataset.dist);
+    if (!dist) return; // anchor line (dist 0) never moves
+    var dir = parseFloat(el.dataset.dir);
+    var anchorY = parseFloat(el.dataset.anchorY);
+    var gap = el.classList.contains("selected") ? 24
+      : el.classList.contains("line-focused") ? 22
+      : LABEL_LINE_GAP;
+    el.setAttribute("y", anchorY + dir * dist * gap);
+  });
+}
+
 function applyFocusState() {
   var svg = document.getElementById("subway-map");
   var selectedArea = state.selectedArea;
@@ -1071,6 +1119,7 @@ function applyFocusState() {
       el.classList.toggle("line-focused", !!belongsToSelected);
       el.classList.toggle("selected", isSelected);
     });
+    updateLabelLineSpacing(labels);
     if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);
     tones.forEach(function (el) {
       el.classList.toggle("hidden-station", !belongsToSelected);

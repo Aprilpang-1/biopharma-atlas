@@ -302,11 +302,11 @@ const LAYOUT = {
   // her exact on-slide label position back into the live map, replacing
   // the earlier hand-picked pins above.
   labelOffsetX: {
-    "targeted-mab": -73,
+    "targeted-mab": -79,
     "jak-inhibitor": 5,
     "fcrn-inhibitor": 1,
-    "gene-therapy-aav": 71,
-    "enzyme-replacement-therapy": -97,
+    "gene-therapy-aav": 79,
+    "enzyme-replacement-therapy": -111,
     "rnai-therapeutics": 38,
     "crispr-gene-editing": 2,
     "glp1-agonist": 73,
@@ -321,20 +321,25 @@ const LAYOUT = {
     "mrna-vaccine": -74,
     "antiviral-daa": -61,
     "antifibrotic-ipf": 51,
-    "anti-tslp-biologic": 54
+    "anti-tslp-biologic": 54,
+    // 2026-08-01: label/line-proximity pass - see labelOffsetY comment
+    // below for the fix rationale, applies equally to these X shifts.
+    "small-molecule": -26,
+    "complement-inhibitor-pnh": -8,
+    "anti-cytokine-mab": -44
   },
   // CRISPR's label centered directly under the Rare Disease legend, 50px
   // gap between them (legend y:290, label default would land at y:360 -
   // pulled up by 20 to land at 340)
   labelOffsetY: {
     "targeted-mab": 38,
-    "anti-cytokine-mab": 9,
+    "anti-cytokine-mab": 17,
     "jak-inhibitor": 6,
     "integrin-inhibitor": 5,
     "fcrn-inhibitor": -1,
-    "gene-therapy-aav": -24,
+    "gene-therapy-aav": -12,
     "enzyme-replacement-therapy": 48,
-    "rnai-therapeutics": 94,
+    "rnai-therapeutics": 102,
     "crispr-gene-editing": 7,
     "glp1-agonist": 12,
     "sglt2-inhibitor": 4,
@@ -350,7 +355,18 @@ const LAYOUT = {
     "mrna-vaccine": 23,
     "antiviral-daa": 29,
     "antifibrotic-ipf": 40,
-    "anti-tslp-biologic": 32
+    "anti-tslp-biologic": 32,
+    // 2026-08-01: label/line-proximity pass - April flagged RNAi
+    // Therapeutics and ASO sitting too close to a passing line when their
+    // line is zoomed in (font-size grows to 19/21px but the label's
+    // position doesn't otherwise move). A systematic check (label
+    // bounding box vs. every line segment, at both resting 16px and
+    // zoomed 19px sizes, minus the line's actual drawn stroke width)
+    // found 8 stations with a real or near-real collision; each entry
+    // above/below marked with this date nudges that station's label just
+    // far enough from its nearest line to clear it with margin, re-verified
+    // with the same check plus a visual render.
+    "aso": 2
   },
   // For stations where a real line's connection to its own dot would
   // otherwise be fully hidden under the pill's opaque white fill, redraw
@@ -953,6 +969,28 @@ function fullViewBoxArray() {
   return LAYOUT.viewBox.split(" ").map(parseFloat);
 }
 
+// getBBox() isn't implemented in every environment (e.g. our jsdom-based
+// preview renderer) and, in principle, could fail even in a real browser
+// on a detached/hidden element - fall back to a rough estimate from
+// font-size and character count so zoom-bounds math always has a usable
+// box. Real browsers hit the accurate getBBox() path in
+// computeLineZoomViewBox below almost all the time; this is the safety net.
+function estimateTextBBox(el) {
+  var x = parseFloat(el.getAttribute("x")) || 0;
+  var y = parseFloat(el.getAttribute("y")) || 0;
+  var text = el.textContent || "";
+  var fontSize = 16;
+  if (el.classList.contains("station-sublabel")) fontSize = 10;
+  else if (el.classList.contains("selected")) fontSize = 21;
+  else if (el.classList.contains("line-focused")) fontSize = 19;
+  var width = text.length * fontSize * 0.58;
+  var height = fontSize * 1.1;
+  // text-anchor is "middle" on every label/sublabel we create, so x is
+  // already the horizontal center; y is the text baseline, so the box
+  // extends mostly upward from it.
+  return { x: x - width / 2, y: y - height * 0.75, width: width, height: height };
+}
+
 function computeLineZoomViewBox(areaId) {
   var pathStr = LAYOUT.linePaths[areaId];
   var pts = [];
@@ -970,6 +1008,33 @@ function computeLineZoomViewBox(areaId) {
   var ys = pts.map(function (p) { return p[1]; });
   var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
   var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+
+  // The line's own path + badge don't capture station labels, many of
+  // which sit off to one side of their dot via labelOffsetX/Y (e.g.
+  // "Targeted mAb", offset 73 units left of its dot) - so bounds based on
+  // path/badge alone can clip a label once zoomed in. Fold every visible
+  // label/sublabel belonging to this line into the bounds too, measured
+  // AFTER applyFocusState() (called just before this, in selectArea) has
+  // already applied the enlarged .line-focused / .selected font-size
+  // classes, so the box reflects the size the label will actually render
+  // at while zoomed.
+  var svg = document.getElementById("subway-map");
+  if (svg) {
+    svg.querySelectorAll("[data-station-label], [data-station-sublabel]").forEach(function (el) {
+      var modId = el.getAttribute("data-station-label") || el.getAttribute("data-station-sublabel");
+      var mod = state.data.modalities.filter(function (m) { return m.id === modId; })[0];
+      if (!mod || mod.areas.indexOf(areaId) === -1) return;
+      var box = null;
+      if (typeof el.getBBox === "function") {
+        try { box = el.getBBox(); } catch (e) { box = null; }
+      }
+      if (!box || (!box.width && !box.height)) box = estimateTextBBox(el);
+      minX = Math.min(minX, box.x);
+      maxX = Math.max(maxX, box.x + box.width);
+      minY = Math.min(minY, box.y);
+      maxY = Math.max(maxY, box.y + box.height);
+    });
+  }
 
   var full = fullViewBoxArray();
   var minPad = full[2] * 0.0375;

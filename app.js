@@ -304,29 +304,58 @@ const LAYOUT = {
   labelOffsetX: {
     "targeted-mab": -79,
     "jak-inhibitor": 5,
-    "fcrn-inhibitor": 1,
     "gene-therapy-aav": 79,
     "enzyme-replacement-therapy": -111,
     "rnai-therapeutics": 38,
     "crispr-gene-editing": 2,
-    "glp1-agonist": 73,
     "sglt2-inhibitor": 4,
-    "thr-beta-agonist": -1,
-    "anti-cgrp-therapy": 57,
-    "arni-heart-failure": -73,
-    "anti-vegf-therapy": 58,
-    "complement-inhibitor-ga": -114,
     "dry-eye-immunomodulator": -12,
-    "cftr-modulator": 80,
-    "mrna-vaccine": -74,
-    "antiviral-daa": -61,
     "antifibrotic-ipf": 51,
-    "anti-tslp-biologic": 54,
     // 2026-08-01: label/line-proximity pass - see labelOffsetY comment
     // below for the fix rationale, applies equally to these X shifts.
     "small-molecule": -26,
+    "anti-cytokine-mab": -44,
+    // 2026-08-01 (round 2): April found more label/line collisions by
+    // eye after the first pass, this time including a few where the
+    // squeeze is against the station's own connecting line running
+    // parallel past the label (not just an unrelated line), or against a
+    // nearby area badge rather than a line at all. Re-ran the same
+    // bounding-box check, this time also checking against every area
+    // badge's circle and each label's own connecting line beyond the
+    // small radius immediately at the dot.
     "complement-inhibitor-pnh": -8,
-    "anti-cytokine-mab": -44
+    "anti-amyloid-mab": -33,
+    "mrna-vaccine": -89,
+    "antiviral-daa": -91,
+    "radioligand-therapy": 0,
+    "glp1-agonist": 90,
+    "arni-heart-failure": -117,
+    "anticoagulant-doac": -57,
+    // 2026-08-01 (round 3): re-ran the same check against ALL 33 stations
+    // (not just the ones April had screenshotted) at the enlarged
+    // "selected" 21px size, since that's the size shown in her
+    // screenshots - this size hadn't been swept map-wide before. Found 8
+    // more stations tight against their own badge or line at that size.
+    "anti-tslp-biologic": 69,
+    "insulin-analog": 15,
+    "thr-beta-agonist": -13,
+    "anti-cgrp-therapy": 69,
+    "cftr-modulator": 101,
+    "anti-vegf-therapy": 70,
+    "fcrn-inhibitor": 1,
+    "complement-inhibitor-ga": -138,
+    // 2026-08-02 (round 4): three more from April's own review, plus ADC
+    // which round 3's map-wide sweep had missed (its "own dot" check used
+    // a generic small radius instead of the pill's real, larger half-
+    // height, so it didn't register ADC sitting right on the pill's own
+    // border - fixed the check and re-verified here). GLP-1 Receptor
+    // Agonist is a tight case: at the enlarged size the label is almost
+    // exactly as wide as the gap between Metabolic's own vertical line and
+    // a distant Hematology vertical it happens to run past, so it's
+    // centered in that gap rather than fully clear on both sides -
+    // confirmed by render that this reads fine (Hematology's segment
+    // there is thin and unfocused in this line's own zoomed view).
+    "adc": 0
   },
   // CRISPR's label centered directly under the Rare Disease legend, 50px
   // gap between them (legend y:290, label default would land at y:360 -
@@ -334,28 +363,14 @@ const LAYOUT = {
   labelOffsetY: {
     "targeted-mab": 38,
     "anti-cytokine-mab": 17,
-    "jak-inhibitor": 6,
     "integrin-inhibitor": 5,
-    "fcrn-inhibitor": -1,
     "gene-therapy-aav": -12,
     "enzyme-replacement-therapy": 48,
     "rnai-therapeutics": 102,
     "crispr-gene-editing": 7,
-    "glp1-agonist": 12,
     "sglt2-inhibitor": 4,
-    "thr-beta-agonist": -1,
-    "anti-amyloid-mab": 12,
-    "anti-cgrp-therapy": 36,
-    "arni-heart-failure": 38,
-    "anti-vegf-therapy": 42,
-    "complement-inhibitor-ga": 38,
     "dry-eye-immunomodulator": 69,
-    "complement-inhibitor-pnh": -6,
-    "cftr-modulator": 25,
-    "mrna-vaccine": 23,
-    "antiviral-daa": 29,
     "antifibrotic-ipf": 40,
-    "anti-tslp-biologic": 32,
     // 2026-08-01: label/line-proximity pass - April flagged RNAi
     // Therapeutics and ASO sitting too close to a passing line when their
     // line is zoomed in (font-size grows to 19/21px but the label's
@@ -366,7 +381,39 @@ const LAYOUT = {
     // above/below marked with this date nudges that station's label just
     // far enough from its nearest line to clear it with margin, re-verified
     // with the same check plus a visual render.
-    "aso": 2
+    "aso": 2,
+    // 2026-08-01 (round 2): see matching comment in labelOffsetX above -
+    // this second pass also checks each label against every area badge
+    // circle and against its own connecting line beyond the immediate
+    // dot vicinity, which is what catches cases like mRNA Vaccine (its
+    // own vertical line runs right past the label, not just near the dot)
+    // and Anti-Amyloid mAb (squeezed between its area badge above and its
+    // own dot below).
+    "complement-inhibitor-pnh": -9,
+    "anti-amyloid-mab": 15,
+    "mrna-vaccine": 23,
+    "antiviral-daa": 29,
+    "jak-inhibitor": -6,
+    "radioligand-therapy": -12,
+    "glp1-agonist": 0,
+    "arni-heart-failure": 30,
+    "anticoagulant-doac": 12,
+    // 2026-08-01 (round 3): see matching comment in labelOffsetX above.
+    "anti-tslp-biologic": 29,
+    "insulin-analog": 0,
+    "thr-beta-agonist": -7,
+    "anti-cgrp-therapy": 36,
+    "cftr-modulator": 25,
+    "anti-vegf-therapy": 42,
+    "fcrn-inhibitor": -10,
+    "complement-inhibitor-ga": 38,
+    // 2026-08-02 (round 4): see matching comment in labelOffsetX above.
+    // ARNI also got a Y change here, not just X - previously placed
+    // "above" its dot via the default clearance formula, now shifted down
+    // so the two-line label's vertical center roughly lines up with the
+    // dot's own y instead, per April's request to align it horizontally
+    // with the station rather than stacking above it.
+    "adc": 8
   },
   // For stations where a real line's connection to its own dot would
   // otherwise be fully hidden under the pill's opaque white fill, redraw
@@ -864,18 +911,6 @@ function buildMap(app) {
 
   renderMapLegendBox(svg);
 
-  svg.appendChild(svgEl("rect", {
-    x: parseFloat(vbParts[0]) + 2,
-    y: parseFloat(vbParts[1]) + 2,
-    width: parseFloat(vbParts[2]) - 4,
-    height: parseFloat(vbParts[3]) - 4,
-    fill: "none",
-    stroke: "#111",
-    "stroke-width": 4,
-    rx: 6,
-    class: "map-frame"
-  }));
-
   app.innerHTML = "";
   app.appendChild(svg);
 }
@@ -1049,6 +1084,27 @@ function computeLineZoomViewBox(areaId) {
     h = w / targetAspect;
   } else {
     w = h * targetAspect;
+  }
+
+  // Floor the zoom level so a very compact line can't zoom in dramatically
+  // further than the others - originally only Ophthalmology (whose own
+  // extent is tiny) hit this, zooming in ~3.7x while sprawling lines like
+  // Cardiovascular can't zoom in at all. April asked to go back to each
+  // line fitting as tightly as possible to its own stations, with this
+  // floor only kicking in as a cap on the extreme case - so it's tuned to
+  // 2.5x max linear zoom (area ratio 1/2.5^2 = 16%, i.e. 40% per side)
+  // rather than a shared target every line gets pulled toward. At this
+  // threshold only Ophthalmology is actually affected; every other line's
+  // natural tight-fit box is already looser than 40% and passes through
+  // unchanged.
+  var MIN_ZOOM_W = full[2] * 0.4;
+  var MIN_ZOOM_H = full[3] * 0.4;
+  if (w < MIN_ZOOM_W) {
+    h *= MIN_ZOOM_W / w;
+    w = MIN_ZOOM_W;
+  } else if (h < MIN_ZOOM_H) {
+    w *= MIN_ZOOM_H / h;
+    h = MIN_ZOOM_H;
   }
 
   // Clamp to the full map's own size - a line whose padded extent already

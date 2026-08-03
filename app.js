@@ -964,9 +964,103 @@ function buildMap(app) {
   });
 
   renderMapLegendBox(svg);
+  setupMapPanning(svg);
 
   app.innerHTML = "";
   app.appendChild(svg);
+}
+
+// ---- Drag-to-pan (2026-08-02) ----
+// While a line is zoomed in, other lines can end up mostly or fully
+// outside the current viewBox - previously the only way to reach one was
+// clicking "All lines" and re-selecting from the overview. This lets you
+// click-and-drag the SAME zoomed-in view around (without resetting the
+// zoom level) to bring a different line into reach and click straight
+// into it. Deliberately mouse-only (not touch) so the existing mobile
+// "swipe to see the full line" native horizontal scroll (#app's
+// overflow-x, .scroll-hint) keeps working exactly as before - adding
+// custom touch panning on top of that would fight the browser's own
+// scroll gesture.
+var PAN_CLICK_THRESHOLD = 6; // px of mouse movement before a press counts
+// as a drag instead of a click, so ordinary station/line/badge clicks
+// (which don't move the mouse) are completely unaffected.
+
+function setupMapPanning(svg) {
+  var pan = null;
+
+  function currentViewBox() {
+    return svg.getAttribute("viewBox").split(" ").map(parseFloat);
+  }
+
+  // Keeps the dragged view inside the full map's own bounds, same as the
+  // full map used for the "All lines" overview - you can pan freely
+  // between lines but never past the map's outer edge.
+  function clampViewBox(vb) {
+    var full = fullViewBoxArray();
+    var w = vb[2], h = vb[3];
+    var maxX = Math.max(full[0], full[0] + full[2] - w);
+    var maxY = Math.max(full[1], full[1] + full[3] - h);
+    var x = Math.min(Math.max(vb[0], full[0]), maxX);
+    var y = Math.min(Math.max(vb[1], full[1]), maxY);
+    return [x, y, w, h];
+  }
+
+  function onMouseMove(e) {
+    if (!pan) return;
+    var dx = e.clientX - pan.startClientX;
+    var dy = e.clientY - pan.startClientY;
+    if (!pan.dragging && Math.hypot(dx, dy) > PAN_CLICK_THRESHOLD) {
+      pan.dragging = true;
+      svg.classList.add("panning");
+    }
+    if (!pan.dragging) return;
+    var rect = svg.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    // Convert screen-pixel mouse movement into viewBox units using the
+    // current zoom's own scale, so panning feels equally responsive to
+    // the cursor whether zoomed way in on one line or viewing the whole
+    // map. Dragging right reveals content that was off to the left, i.e.
+    // the viewBox's own x/y move opposite to the mouse.
+    var scaleX = pan.startViewBox[2] / rect.width;
+    var scaleY = pan.startViewBox[3] / rect.height;
+    var next = clampViewBox([
+      pan.startViewBox[0] - dx * scaleX,
+      pan.startViewBox[1] - dy * scaleY,
+      pan.startViewBox[2],
+      pan.startViewBox[3]
+    ]);
+    svg.setAttribute("viewBox", next.join(" "));
+  }
+
+  function onMouseUp() {
+    if (pan && pan.dragging) {
+      svg.classList.remove("panning");
+      // A real drag still fires a native "click" on mouseup (browsers
+      // don't suppress it just because the mouse moved) - swallow that
+      // one click, in the capture phase before it reaches any
+      // station/badge/line, so releasing the drag doesn't also select
+      // whatever happens to be under the cursor.
+      svg.addEventListener("click", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }, { capture: true, once: true });
+    }
+    pan = null;
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  }
+
+  svg.addEventListener("mousedown", function (e) {
+    if (e.button !== 0) return; // primary button only
+    pan = {
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startViewBox: currentViewBox(),
+      dragging: false
+    };
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  });
 }
 
 // Single consolidated legend box (bottom-left, like a real transit map's
@@ -1208,7 +1302,7 @@ function selectArea(areaId) {
   document.getElementById("detail-panel").classList.add("hidden");
   var areaObj = state.data.areas.filter(function (a) { return a.id === areaId; })[0];
   document.getElementById("subtitle").textContent =
-    "Viewing the " + areaObj.name + " line - tap a station";
+    "Viewing the " + areaObj.name + " line - tap a station, drag to explore other lines";
 }
 
 function backToOverview() {

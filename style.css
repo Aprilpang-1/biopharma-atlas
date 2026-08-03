@@ -206,6 +206,17 @@ header {
   height: auto;
   max-height: 100%;
   display: block;
+  cursor: grab;
+}
+
+/* 2026-08-02: drag-to-pan (see setupMapPanning in app.js) - grabbing
+   cursor while an actual drag is in progress. Clickable elements (lines,
+   dots, badges) set their own cursor:pointer via more specific selectors
+   below, so hovering directly over them still shows a pointer; the grab
+   hand only shows over open map background, signaling the whole map can
+   be dragged around. */
+#subway-map.panning {
+  cursor: grabbing;
 }
 
 .scroll-hint {

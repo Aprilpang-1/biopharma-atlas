@@ -178,23 +178,28 @@ header {
   color: #666;
 }
 
-/* #app is the flexible flex child (see body rule above) - flex:1 1 auto
-   lets it shrink below its content size, min-height:0 is required for
-   that shrink to actually be allowed inside a flex column (browsers
-   default flex items to min-height:auto, which otherwise blocks
-   shrinking below content size), and the explicit floor further down
-   (220px) keeps it from disappearing entirely if the window is very
-   short. Once #app's height is resolved by the flex layout, the SVG
-   inside it (see #subway-map) fits itself within that using both
-   max-width and max-height, so it always occupies exactly the space
-   that's actually left over - no viewport-size guessing involved. */
+/* #app is the flexible flex child (see body rule above). flex-shrink:1
+   still lets it shrink below its natural size on short viewports (the
+   explicit floor further down, 220px, keeps it from disappearing
+   entirely) - that part is unchanged from the original scroll fix.
+
+   2026-08-03: flex-grow changed from 1 to 0. With grow:1, #app used to
+   soak up ALL leftover vertical space in the page whenever the detail
+   panel (#detail-panel) was hidden - the map itself doesn't get any
+   taller (it's capped by its own aspect ratio via #subway-map's
+   max-height:100%), so that leftover space just became blank space
+   between the map and the legend below it. That's what made the legend
+   visibly "jump up" the moment a station was clicked and the detail
+   panel appeared and started claiming some of that space. With grow:0,
+   #app always hugs the map's natural height, so the legend sits
+   immediately after it whether or not the detail panel is showing. */
 #app {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   margin: 0 -1.5rem;
   padding: 0 1.5rem;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 220px;
   display: flex;
   align-items: flex-start;

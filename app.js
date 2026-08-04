@@ -22,7 +22,11 @@ const LAYOUT = {
   // enough (y:55 -> y:15) to clear JAK/Integrin/FcRn Inhibitor's label
   // text, not just their dots - the two lines still keep a healthy ~70
   // unit gap between them.
-  viewBox: "-250 -70 2150 1090",
+  // 2026-08-03: widened top/right/bottom margins (top 15->70, legend-to-
+  // right-edge 20->100, legend-to-bottom-edge 10->90 units) so the map and
+  // legend box have visible breathing room now that the black frame is
+  // gone; left margin left unchanged since it was already comfortable.
+  viewBox: "-250 -125 2230 1225",
   linePaths: {
     // small notches at each multi-tone stop (Targeted mAb, ADC, Bispecific
     // Ab) so the line visibly crosses its own color dot within the pill
@@ -750,9 +754,22 @@ function buildMap(app) {
   var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
   var vbParts = LAYOUT.viewBox.split(" ");
+
+  // 2026-08-03: "Blueprint Grid" background (April's chosen Option C) -
+  // pale graph-paper gridlines behind the map, ties into the subway/
+  // blueprint theme now that the old black outer frame is gone.
+  var bgPattern = svgEl("pattern", {
+    id: "map-bg-grid", width: 60, height: 60, patternUnits: "userSpaceOnUse"
+  });
+  bgPattern.appendChild(svgEl("rect", { width: 60, height: 60, fill: "#eef4fb" }));
+  bgPattern.appendChild(svgEl("path", { d: "M 60 0 L 0 0 0 60", fill: "none", stroke: "#c3d7ea", "stroke-width": 1.4 }));
+  var bgDefs = svgEl("defs", {});
+  bgDefs.appendChild(bgPattern);
+  svg.appendChild(bgDefs);
+
   svg.appendChild(svgEl("rect", {
     x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3],
-    fill: "#fdfdfb", class: "map-background"
+    fill: "url(#map-bg-grid)", class: "map-background"
   }));
 
   var stationPoints = buildStationPointSet();

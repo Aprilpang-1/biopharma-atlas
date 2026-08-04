@@ -533,12 +533,34 @@ function updateCompareButton() {
   btn.classList.toggle("hidden", state.pinned.length < 2);
 }
 
+// 2026-08-02: for a station shared by multiple lines (e.g. Targeted mAb
+// spans 5), April asked that its example drugs actually demonstrate every
+// line it belongs to - not just whichever happened to get added first -
+// and that each drug show which line/therapeutic area it represents. Each
+// exampleDrugs entry now carries an "area" (only added for drugs used by
+// a shared, multi-area station - single-area stations don't need it,
+// since the area is already obvious from context). The tag is only shown
+// when the station itself is shared (mod.areas.length > 1); showing it on
+// every single-line station's drugs would just be visual noise repeating
+// the breadcrumb. A few shared stations still have one line with no
+// genuine drug example (e.g. no antibody-drug conjugate is approved for
+// an autoimmune indication yet) - rather than force a fake or
+// investigational-only example, that line is simply left uncovered here.
 function drugListHtml(mod) {
+  var isShared = mod.areas.length > 1;
   var drugs = mod.exampleDrugIds.map(function (id) {
     return state.data.exampleDrugs.filter(function (d) { return d.id === id; })[0];
   });
   return drugs.map(function (d) {
-    return "<li><span class=\"drug-name\">" + esc(d.name) + "</span><span class=\"drug-meta\">" + esc(d.company) + " &middot; " + d.year + "</span></li>";
+    var areaTag = "";
+    if (isShared && d.area) {
+      var areaObj = state.data.areas.filter(function (a) { return a.id === d.area; })[0];
+      if (areaObj) {
+        areaTag = "<span class=\"drug-area-tag\" style=\"background:" + esc(areaObj.color) + "\">" + esc(areaObj.name) + "</span>";
+      }
+    }
+    return "<li><div class=\"drug-top\"><span class=\"drug-name\">" + esc(d.name) + "</span>" + areaTag + "</div>" +
+      "<span class=\"drug-meta\">" + esc(d.company) + " &middot; " + d.year + "</span></li>";
   }).join("");
 }
 
@@ -1454,16 +1476,10 @@ function renderDetailPanel() {
   }
 
   if (state.detailView === "drugs") {
-    var drugs = mod.exampleDrugIds.map(function (id) {
-      return state.data.exampleDrugs.filter(function (d) { return d.id === id; })[0];
-    });
-    var drugItems = drugs.map(function (d) {
-      return "<li><span class=\"drug-name\">" + esc(d.name) + "</span><span class=\"drug-meta\">" + esc(d.company) + " &middot; " + d.year + "</span></li>";
-    }).join("");
     panel.innerHTML =
       breadcrumbHtml(area, mod, "Example drugs") +
       "<h3>" + esc(mod.name) + " - Example drugs</h3>" +
-      "<ul class=\"drug-list\">" + drugItems + "</ul>" +
+      "<ul class=\"drug-list\">" + drugListHtml(mod) + "</ul>" +
       "<button class=\"back-inline\" data-action=\"back-to-concept\">&larr; Back to concept</button>";
   } else if (state.detailView === "proscons") {
     var prosItems = mod.pros.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("");

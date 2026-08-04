@@ -517,14 +517,36 @@ header {
 
 .drug-list li {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.2rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid #e5e5e5;
   font-size: 0.9rem;
 }
 
+.drug-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .drug-name {
   font-weight: 600;
+}
+
+/* 2026-08-02: shown next to a drug's name only on shared (multi-line)
+   stations, so each example drug's line/therapeutic area reads at a
+   glance - color matches that area's own badge/legend color elsewhere on
+   the map for visual consistency. */
+.drug-area-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .drug-meta {

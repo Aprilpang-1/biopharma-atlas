@@ -590,6 +590,11 @@ function showCompareView() {
 
 function closeCompare() {
   state.comparing = false;
+  // 2026-08-05: April asked that closing a comparison also unpin both
+  // stations, so she can pin a fresh pair next time without manually
+  // unpinning the old ones first each time.
+  state.pinned = [];
+  updateCompareButton();
   renderDetailPanel();
 }
 

@@ -335,6 +335,17 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.15rem 0.35rem;
+  margin: -0.15rem -0.35rem;
+  transition: background 0.15s ease;
+}
+
+.legend-item:hover,
+.legend-item:focus-visible {
+  background: #eef1f5;
+  outline: none;
 }
 
 .legend-swatch {

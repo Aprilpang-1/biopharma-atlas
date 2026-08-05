@@ -1165,18 +1165,34 @@ function renderMapLegendBox(svg) {
   });
 }
 
+// 2026-08-04: the bottom "Lines:" row is now clickable, same as the
+// in-map legend box (see renderMapLegendBox's swatch/nameText handlers
+// above) - clicking a badge or name here also zooms to that line, so
+// there are two equivalent ways to jump to a line instead of one.
 function renderLegend() {
   var el = document.getElementById("map-legend");
   if (!el) return;
   var items = state.data.areas.map(function (area) {
     return (
-      "<span class=\"legend-item\">" +
+      "<span class=\"legend-item\" data-area=\"" + esc(area.id) + "\" role=\"button\" tabindex=\"0\">" +
       "<span class=\"legend-swatch\" style=\"background:" + area.color + "\">" + esc(area.abbr || "") + "</span>" +
       esc(area.name) +
       "</span>"
     );
   }).join("");
   el.innerHTML = "<span class=\"legend-label\">Lines:</span>" + items;
+
+  el.querySelectorAll(".legend-item[data-area]").forEach(function (item) {
+    item.addEventListener("click", function () {
+      selectArea(item.getAttribute("data-area"));
+    });
+    item.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectArea(item.getAttribute("data-area"));
+      }
+    });
+  });
 }
 
 // Clicking a line zooms the map's viewBox toward that line (its full

@@ -287,8 +287,11 @@ header {
   pointer-events: none;
 }
 
+/* font-size for these three is set inline per-element in
+   renderMapLegendBox (app.js), computed from LEGEND_SCALE, so it's not
+   repeated here - keeping a static px value in both places previously
+   caused the box/badges to scale but the text to silently stay frozen. */
 .legend-box-title {
-  font-size: 18.9px;
   font-weight: 700;
   fill: #111;
 }
@@ -299,7 +302,6 @@ header {
 }
 
 .legend-box-swatch-text {
-  font-size: 12.15px;
   font-weight: 700;
   fill: #fff;
   text-anchor: middle;
@@ -307,7 +309,6 @@ header {
 }
 
 .legend-box-name {
-  font-size: 13.5px;
   font-weight: 600;
   fill: #333;
   cursor: pointer;

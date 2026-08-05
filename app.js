@@ -1106,38 +1106,63 @@ function setupMapPanning(svg) {
 // corner legend) mapping every abbreviation shown on the map to its full
 // area name - since the map itself now only shows abbreviations inline.
 // Legend box scale - April compared Current/Medium/Large against the real
-// map (animated preview) and picked Medium (1.35x). Anchored to the same
-// bottom-right corner margin the box has always used (20px from the map's
-// right edge, 10px from the bottom), growing up-and-left as it scales.
-var LEGEND_SCALE = 1.35;
-var MAP_LEGEND_BOX = { w: 400 * LEGEND_SCALE, h: 130 * LEGEND_SCALE };
+// map (animated preview) and picked Medium (1.35x), then asked for the box
+// itself to go up to 1.5x. Anchored to the same bottom-right corner margin
+// the box has always used (20px from the map's right edge, 10px from the
+// bottom), growing up-and-left as it scales.
+//
+// 2026-08-04: two things fixed/changed together here. (1) the title/badge-
+// letter/area-name font sizes used to be hardcoded static CSS px values
+// (18.9/12.15/13.5, i.e. baked in for the old 1.35 scale) instead of being
+// computed from LEGEND_SCALE like the box/circle geometry already was -
+// that's why bumping the scale grew the box and swatch circles but left
+// the text sizes frozen. Font sizes are now set inline from LEGEND_SCALE
+// so everything grows together. (2) April specifically asked for the
+// badge (swatch circle) and its letters to be bigger than a plain
+// proportional bump would give, so those two use larger base constants
+// than the title/name text (14/10, unchanged base - just newly
+// proportional). Went through several rounds landing on +15% for the
+// badge circle (10->11.5) with the box kept at the first-boost size
+// (h-base 160, row height tightened to 24*s to fit without rows
+// overlapping). The letter size was tried at a 5% reduction from +15%
+// first (14.2) but "ON" still crowded the circle's edge, so it was
+// dropped further to 10.5 - checked against the widest 2-letter
+// abbreviation (MB), not just ON, so every badge has real margin.
+var LEGEND_SCALE = 1.5;
+var MAP_LEGEND_BOX = { w: 400 * LEGEND_SCALE, h: 160 * LEGEND_SCALE };
 MAP_LEGEND_BOX.x = 1880 - MAP_LEGEND_BOX.w;
 MAP_LEGEND_BOX.y = 1010 - MAP_LEGEND_BOX.h;
 
 function renderMapLegendBox(svg) {
   var box = MAP_LEGEND_BOX;
   var s = LEGEND_SCALE;
+  var titleSize = 14 * s;
+  var badgeRadius = 11.5 * s;
+  var badgeTextSize = 10.5 * s;
+  var nameSize = 10 * s;
+
   svg.appendChild(svgEl("rect", {
     x: box.x, y: box.y, width: box.w, height: box.h,
     rx: 8 * s, fill: "#fdfdfb", stroke: "#111", "stroke-width": 2 * s,
     class: "legend-box"
   }));
   svg.appendChild(svgEl("text", {
-    x: box.x + 10 * s, y: box.y + 14 * s,
-    class: "legend-box-title"
+    x: box.x + 10 * s, y: box.y + 16 * s,
+    class: "legend-box-title",
+    style: "font-size:" + titleSize + "px"
   })).textContent = "Lines";
 
   var padding = 10 * s;
   var colW = (box.w - padding * 2) / 2;
-  var rowH = 18 * s;
-  var rowsStartY = box.y + 32 * s;
+  var rowH = 24 * s;
+  var rowsStartY = box.y + 38 * s;
   state.data.areas.forEach(function (area, i) {
     var col = i < 5 ? 0 : 1;
     var row = i % 5;
-    var cx = box.x + padding + 8 * s + col * colW;
+    var cx = box.x + padding + badgeRadius + col * colW;
     var cy = rowsStartY + row * rowH;
     var swatch = svgEl("circle", {
-      cx: cx, cy: cy, r: 7 * s,
+      cx: cx, cy: cy, r: badgeRadius,
       fill: area.color,
       class: "legend-box-swatch",
       "data-area": area.id
@@ -1146,18 +1171,20 @@ function renderMapLegendBox(svg) {
     svg.appendChild(swatch);
 
     var swatchText = svgEl("text", {
-      x: cx, y: cy + 3 * s,
+      x: cx, y: cy + badgeTextSize * 0.34,
       "text-anchor": "middle",
       class: "legend-box-swatch-text",
-      "data-area": area.id
+      "data-area": area.id,
+      style: "font-size:" + badgeTextSize + "px"
     });
     swatchText.textContent = area.abbr || "";
     svg.appendChild(swatchText);
 
     var nameText = svgEl("text", {
-      x: cx + 13 * s, y: cy + 3 * s,
+      x: cx + badgeRadius + 6 * s, y: cy + nameSize * 0.34,
       class: "legend-box-name",
-      "data-area": area.id
+      "data-area": area.id,
+      style: "font-size:" + nameSize + "px"
     });
     nameText.textContent = area.name;
     nameText.addEventListener("click", function () { selectArea(area.id); });

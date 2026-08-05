@@ -1100,6 +1100,149 @@ function setupMapPanning(svg) {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
   });
+
+  // ---- Touch pinch-zoom + drag-pan (2026-08-05) ----
+  // April's phone screenshot showed the legend/detail panel adapting to
+  // her screen while the map itself just stayed at a fixed size, forcing
+  // the old "swipe to see the full line" native horizontal scroll. She
+  // asked for it to feel like a real mobile map app instead - this adds
+  // two-finger pinch-to-zoom and one-finger drag-to-pan via touch events,
+  // replacing that native scroll (see touch-action:none on #subway-map in
+  // style.css, and the updated .scroll-hint copy). A single finger that
+  // doesn't move past the same threshold as the mouse version still
+  // reaches the browser's normal tap/click, so station/line/badge
+  // selection is unaffected - only real drags and pinches are intercepted.
+  var MIN_ZOOM_FRACTION = 0.08; // deepest pinch-zoom: 8% of the full map's
+  // width - noticeably closer than the per-line auto-zoom ever goes, so
+  // pinching in still feels like it's doing something new.
+  var touchState = null;
+
+  function touchDist(t1, t2) {
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  }
+
+  function touchMid(t1, t2) {
+    return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+  }
+
+  function beginTouch(e) {
+    var touches = e.touches;
+    if (touches.length === 1) {
+      touchState = {
+        mode: "pan",
+        startClientX: touches[0].clientX,
+        startClientY: touches[0].clientY,
+        startViewBox: currentViewBox(),
+        dragging: false
+      };
+    } else if (touches.length >= 2) {
+      var rect = svg.getBoundingClientRect();
+      var startVb = currentViewBox();
+      var mid = touchMid(touches[0], touches[1]);
+      var scaleX = startVb[2] / rect.width;
+      var scaleY = startVb[3] / rect.height;
+      touchState = {
+        mode: "pinch",
+        startDist: touchDist(touches[0], touches[1]),
+        startViewBox: startVb,
+        anchorX: startVb[0] + (mid.x - rect.left) * scaleX,
+        anchorY: startVb[1] + (mid.y - rect.top) * scaleY,
+        dragging: true
+      };
+      svg.classList.add("panning");
+    } else {
+      touchState = null;
+    }
+  }
+
+  svg.addEventListener("touchstart", function (e) {
+    beginTouch(e);
+  }, { passive: true });
+
+  svg.addEventListener("touchmove", function (e) {
+    if (!touchState) return;
+
+    if (touchState.mode === "pan" && e.touches.length === 1) {
+      var t = e.touches[0];
+      var dx = t.clientX - touchState.startClientX;
+      var dy = t.clientY - touchState.startClientY;
+      if (!touchState.dragging && Math.hypot(dx, dy) > PAN_CLICK_THRESHOLD) {
+        touchState.dragging = true;
+        svg.classList.add("panning");
+      }
+      if (!touchState.dragging) return;
+      e.preventDefault();
+      var rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      var scaleX = touchState.startViewBox[2] / rect.width;
+      var scaleY = touchState.startViewBox[3] / rect.height;
+      var next = clampViewBox([
+        touchState.startViewBox[0] - dx * scaleX,
+        touchState.startViewBox[1] - dy * scaleY,
+        touchState.startViewBox[2],
+        touchState.startViewBox[3]
+      ]);
+      svg.setAttribute("viewBox", next.join(" "));
+    } else if (touchState.mode === "pinch" && e.touches.length >= 2) {
+      e.preventDefault();
+      var full = fullViewBoxArray();
+      var minW = full[2] * MIN_ZOOM_FRACTION;
+      var maxW = full[2];
+      var minScale = minW / touchState.startViewBox[2];
+      var maxScale = maxW / touchState.startViewBox[2];
+      var dist = touchDist(e.touches[0], e.touches[1]);
+      var rawScale = touchState.startDist / Math.max(dist, 1);
+      var scale = Math.min(maxScale, Math.max(minScale, rawScale));
+      var newW = touchState.startViewBox[2] * scale;
+      var newH = touchState.startViewBox[3] * scale;
+
+      var mid = touchMid(e.touches[0], e.touches[1]);
+      var rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      var newScaleX = newW / rect.width;
+      var newScaleY = newH / rect.height;
+      var newX = touchState.anchorX - (mid.x - rect.left) * newScaleX;
+      var newY = touchState.anchorY - (mid.y - rect.top) * newScaleY;
+      var next = clampViewBox([newX, newY, newW, newH]);
+      svg.setAttribute("viewBox", next.join(" "));
+    } else {
+      // finger count changed mid-gesture (e.g. a pinch dropped to one
+      // finger) - simplest and most reliable is to just end the current
+      // gesture rather than try to seamlessly hand off between modes.
+      touchState = null;
+      svg.classList.remove("panning");
+    }
+  }, { passive: false });
+
+  function endTouch(e) {
+    if (!touchState) return;
+    var wasDragging = touchState.dragging;
+    if (e.touches.length === 0) {
+      svg.classList.remove("panning");
+      if (wasDragging) {
+        // Same reasoning as the mouse version: a real drag/pinch can
+        // still fire a trailing synthetic click on release - swallow it
+        // so lifting your fingers doesn't also select whatever station
+        // happens to be under them.
+        svg.addEventListener("click", function (ce) {
+          ce.stopPropagation();
+          ce.preventDefault();
+        }, { capture: true, once: true });
+      }
+      touchState = null;
+    } else {
+      // Dropped from 2 fingers to 1 (or similar) - end this gesture;
+      // the remaining finger starts a fresh gesture on its next move via
+      // touchstart's usual path (browsers re-fire touchstart when a new
+      // contact point is the only one left in some cases, but to stay
+      // robust either way we just clear state here too).
+      touchState = null;
+      svg.classList.remove("panning");
+    }
+  }
+
+  svg.addEventListener("touchend", endTouch, { passive: true });
+  svg.addEventListener("touchcancel", endTouch, { passive: true });
 }
 
 // Single consolidated legend box (bottom-left, like a real transit map's

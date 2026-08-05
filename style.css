@@ -212,6 +212,11 @@ header {
   max-height: 100%;
   display: block;
   cursor: grab;
+  /* 2026-08-05: hands touch gestures on the map entirely to our own
+     pinch-zoom/drag-pan JS (setupMapPanning's touch handlers) instead of
+     the browser's native pinch-to-zoom-the-page or two-finger scroll -
+     without this, the two systems fight each other. */
+  touch-action: none;
 }
 
 /* 2026-08-02: drag-to-pan (see setupMapPanning in app.js) - grabbing
@@ -641,6 +646,18 @@ header {
 
   .scroll-hint {
     display: block;
+  }
+
+  /* 2026-08-05: the map's touch gestures now pan/zoom the SVG's own
+     viewBox (setupMapPanning) instead of relying on the browser's native
+     horizontal scroll of an oversized element - and touch-action:none
+     on #subway-map (see above) turns that native scroll off entirely.
+     Keeping min-width:900px here on mobile would leave part of the map
+     permanently off-screen with no way to reach it, so it's dropped to
+     0 - the SVG now always exactly fills the phone's screen width, and
+     pinch/pan is the only way to see the rest, same as a real map app. */
+  #subway-map {
+    min-width: 0;
   }
 
   .station-dot {

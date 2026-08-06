@@ -755,27 +755,210 @@ var CORNER_RADIUS = 20;
 // below for how this scales up when a label's font-size grows.
 var LABEL_LINE_GAP = 15;
 
+// 2026-08-05: city background (April's "make it like a real city map,
+// add skyscrapers/river/bridges" request, refined over several rounds -
+// lighter dusk palette, full-bleed river crossing instead of edge-only,
+// 3D isometric buildings instead of flat rectangles, and slow ambient
+// motion: window twinkle, bridge-light breathing, a flowing light
+// pattern along the river current). Deterministic (seeded RNG) so the
+// layout is stable across reloads rather than reshuffling every visit.
+// Everything renders BEHIND the lines/stations at low opacity so it
+// reads as atmosphere, not competing content.
+function seededRandom(seed) {
+  var s = seed;
+  return function () {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function buildCityBuilding(rnd, x, y, w, h, roofStyle) {
+  var g = svgEl("g", { class: "city-building", opacity: 0.4 });
+  var sideW = w * 0.28;
+  var skew = sideW * 0.55;
+
+  // front face (lit) + a narrower side face (darker, unlit) skewed off
+  // the right edge - the cheap "isometric box" trick that makes a plain
+  // rectangle read as a building corner instead of a flat cutout
+  g.appendChild(svgEl("rect", { x: x, y: y, width: w - sideW, height: h, fill: "#a9c6e3" }));
+  var fx = x + (w - sideW);
+  var sidePts = [
+    [fx, y], [fx + sideW, y - skew * 0.15],
+    [fx + sideW, y + h - skew * 0.15], [fx, y + h]
+  ].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+  g.appendChild(svgEl("polygon", { points: sidePts, fill: "#6f8bad" }));
+
+  // roofline variety (flat/antenna/setback/pointed) - real skylines are
+  // never uniform rectangles, and this alone does a lot to sell "city"
+  var roofW = w - sideW;
+  if (roofStyle === "antenna") {
+    var ax = x + roofW * 0.5;
+    g.appendChild(svgEl("line", { x1: ax, y1: y - 18, x2: ax, y2: y, stroke: "#6f8bad", "stroke-width": 1.6 }));
+    g.appendChild(svgEl("circle", { cx: ax, cy: y - 18, r: 2, fill: "#ff8a80", opacity: 0.85 }));
+  } else if (roofStyle === "setback") {
+    var sw = roofW * 0.55, sh = h * 0.18;
+    var sx = x + (roofW - sw) / 2;
+    g.appendChild(svgEl("rect", { x: sx, y: y - sh, width: sw * 0.72, height: sh, fill: "#a9c6e3" }));
+    var setbackPts = [
+      [sx + sw * 0.72, y - sh], [sx + sw, y - sh - skew * 0.1],
+      [sx + sw, y - skew * 0.1], [sx + sw * 0.72, y]
+    ].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+    g.appendChild(svgEl("polygon", { points: setbackPts, fill: "#6f8bad" }));
+  } else if (roofStyle === "pointed") {
+    var apex = x + roofW * 0.5;
+    var peakPts = [[x, y], [apex, y - 22], [x + roofW, y]]
+      .map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+    g.appendChild(svgEl("polygon", { points: peakPts, fill: "#a9c6e3" }));
+  }
+
+  // windows on the front face only, each with its own randomized
+  // (negative) animation-delay so the twinkle keyframe (style.css)
+  // doesn't sync every window to the same beat
+  var frontW = w * 0.72;
+  var rows = Math.max(2, Math.floor(h / 9));
+  var cols = Math.max(1, Math.floor(frontW / 7));
+  for (var r = 1; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      if (rnd() > 0.42) continue;
+      var wx = x + 2 + c * (frontW / cols);
+      var wy = y + r * (h / rows);
+      var warm = rnd() > 0.35;
+      var delay = (-rnd() * 5).toFixed(2) + "s";
+      g.appendChild(svgEl("rect", {
+        x: wx, y: wy, width: 1.8, height: 2.6,
+        fill: warm ? "#ffe3ad" : "#ffffff", class: "city-window",
+        style: "animation-delay:" + delay
+      }));
+    }
+  }
+  return g;
+}
+
+function buildCityBackground(svg, vbParts) {
+  var VB = { x0: parseFloat(vbParts[0]), y0: parseFloat(vbParts[1]), w: parseFloat(vbParts[2]), h: parseFloat(vbParts[3]) };
+  var x1 = VB.x0 + VB.w, y1 = VB.y0 + VB.h;
+  var rnd = seededRandom(23);
+
+  var defs = svgEl("defs", {});
+  var riverGrad = svgEl("linearGradient", { id: "city-river-grad", x1: 0, y1: 0, x2: 0, y2: 1 });
+  riverGrad.appendChild(svgEl("stop", { offset: "0%", "stop-color": "#8fc2e3" }));
+  riverGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#bfe0f2" }));
+  defs.appendChild(riverGrad);
+  svg.appendChild(defs);
+
+  var g = svgEl("g", { class: "city-bg" });
+
+  // buildings scattered full-bleed across the whole canvas (not just the
+  // edges) at low density/opacity, so the skyline sits behind every line
+  // rather than just framing the map
+  var cols = 16, rows = 9, density = 0.24;
+  var cw = VB.w / cols, ch = VB.h / rows;
+  var roofs = ["flat", "flat", "antenna", "setback", "pointed", "flat"];
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      if (rnd() > density) continue;
+      var bw = cw * (0.4 + rnd() * 0.4);
+      var bh = ch * (0.4 + rnd() * 0.45);
+      var bx = VB.x0 + c * cw + (cw - bw) * rnd();
+      var by = VB.y0 + r * ch + (ch - bh) * rnd();
+      var roof = roofs[Math.floor(rnd() * roofs.length)];
+      g.appendChild(buildCityBuilding(rnd, bx, by, bw, bh, roof));
+    }
+  }
+
+  // river sweeps diagonally through the whole canvas, under the lines -
+  // routed through the layout's more open corners rather than through
+  // the densest label clusters
+  function riverPathD(amp) {
+    var pts = [
+      [VB.x0 - 40, y1 - 120],
+      [VB.x0 + VB.w * 0.28, y1 - 260],
+      [VB.x0 + VB.w * 0.55, y1 - 520],
+      [VB.x0 + VB.w * 0.8, y1 - 760],
+      [x1 + 40, y1 - 980]
+    ];
+    var d = "M " + pts[0][0] + "," + pts[0][1];
+    for (var i = 1; i < pts.length; i++) {
+      var px = pts[i - 1][0], py = pts[i - 1][1];
+      var cx = pts[i][0], cy = pts[i][1];
+      var mx = (px + cx) / 2 + (i % 2 === 0 ? amp : -amp);
+      d += " Q " + mx + "," + ((py + cy) / 2) + " " + cx + "," + cy;
+    }
+    return d;
+  }
+  var riverD = riverPathD(75);
+  g.appendChild(svgEl("path", {
+    d: riverD, stroke: "url(#city-river-grad)", "stroke-width": 82,
+    fill: "none", opacity: 0.5, "stroke-linecap": "round"
+  }));
+
+  // flowing current: a dashed highlight traced along the same river
+  // path, animated via stroke-dashoffset (see .city-river-flow keyframe
+  // in style.css) - the twinkling light streaks below fade in place,
+  // this is what actually reads as "water moving downstream".
+  g.appendChild(svgEl("path", {
+    d: riverD, stroke: "#eaf6ff", "stroke-width": 10, fill: "none", opacity: 0.35,
+    "stroke-linecap": "round", "stroke-dasharray": "4 42",
+    class: "city-river-flow", transform: "translate(0,-18)"
+  }));
+
+  // ambient light streaks scattered along the river, independently
+  // twinkling (glints of light on moving water)
+  for (var i = 0; i < 40; i++) {
+    var t = rnd();
+    var sx = VB.x0 - 40 + t * (VB.w + 80);
+    var sy = y1 - 120 - t * (y1 - 120 - (VB.y0 - 40));
+    var len = 8 + rnd() * 22;
+    var warmS = rnd() > 0.45;
+    var delayS = (-rnd() * 4.5).toFixed(2) + "s";
+    g.appendChild(svgEl("line", {
+      x1: sx, y1: sy, x2: sx, y2: sy + len,
+      stroke: warmS ? "#ffe3ad" : "#ffffff", "stroke-width": 1.4,
+      class: "city-light-streak", style: "animation-delay:" + delayS
+    }));
+  }
+
+  // bridges at 3 fixed points computed to sit ON the river's path (an
+  // earlier hand-guessed placement drifted off the visible river band,
+  // which made their deck lights hard to spot - see 2026-08-05 fix)
+  function addBridge(cx, cy, angleDeg, span) {
+    var rad = (angleDeg * Math.PI) / 180;
+    var dx = Math.cos(rad), dy = Math.sin(rad);
+    var half = span / 2;
+    var bx1 = cx - dx * half, by1 = cy - dy * half;
+    var bx2 = cx + dx * half, by2 = cy + dy * half;
+    var nx = -dy, ny = dx;
+    g.appendChild(svgEl("line", { x1: bx1, y1: by1, x2: bx2, y2: by2, stroke: "#5c7a95", "stroke-width": 9, opacity: 0.9 }));
+    g.appendChild(svgEl("line", { x1: cx - nx * 10, y1: cy - ny * 10 - 30, x2: cx - nx * 10, y2: cy - ny * 10 + 30, stroke: "#3f5a75", "stroke-width": 5, opacity: 0.9 }));
+    g.appendChild(svgEl("line", { x1: cx + nx * 10, y1: cy + ny * 10 - 30, x2: cx + nx * 10, y2: cy + ny * 10 + 30, stroke: "#3f5a75", "stroke-width": 5, opacity: 0.9 }));
+    for (var t2 = -half + 6; t2 <= half - 6; t2 += 13) {
+      var lx = cx + dx * t2, ly = cy + dy * t2;
+      var delayB = (-rnd() * 3.5).toFixed(2) + "s";
+      g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 7, fill: "#ffb84d", class: "city-bridge-light-halo", style: "animation-delay:" + delayB }));
+      g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 3.2, fill: "#ffcf7a", class: "city-bridge-light-core", style: "animation-delay:" + delayB }));
+    }
+  }
+  addBridge(30, 804, 60, 120);
+  addBridge(865, 405, 60, 120);
+  addBridge(1604, 40, 60, 120);
+
+  svg.appendChild(g);
+}
+
 function buildMap(app) {
   var svg = svgEl("svg", { id: "subway-map", viewBox: LAYOUT.viewBox });
 
   var vbParts = LAYOUT.viewBox.split(" ");
 
-  // 2026-08-03: "Blueprint Grid" background (April's chosen Option C) -
-  // pale graph-paper gridlines behind the map, ties into the subway/
-  // blueprint theme now that the old black outer frame is gone.
-  var bgPattern = svgEl("pattern", {
-    id: "map-bg-grid", width: 60, height: 60, patternUnits: "userSpaceOnUse"
-  });
-  bgPattern.appendChild(svgEl("rect", { width: 60, height: 60, fill: "#eef4fb" }));
-  bgPattern.appendChild(svgEl("path", { d: "M 60 0 L 0 0 0 60", fill: "none", stroke: "#c3d7ea", "stroke-width": 1.4 }));
-  var bgDefs = svgEl("defs", {});
-  bgDefs.appendChild(bgPattern);
-  svg.appendChild(bgDefs);
-
+  // 2026-08-05: replaced the "Blueprint Grid" background (2026-08-03,
+  // April's chosen Option C) with a full-bleed illustrated city backdrop
+  // per April's request to make the map "like a real city map" - see
+  // buildCityBackground below for the skyline/river/bridges themselves.
   svg.appendChild(svgEl("rect", {
     x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3],
-    fill: "url(#map-bg-grid)", class: "map-background"
+    fill: "#eef5fb", class: "map-background"
   }));
+  buildCityBackground(svg, vbParts);
 
   var stationPoints = buildStationPointSet();
 

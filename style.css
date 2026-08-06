@@ -288,6 +288,71 @@ header h1 {
   display: none;
 }
 
+/* 2026-08-05: city background (April's "make it like a real city map"
+   request, refined over several rounds - see buildCityBackground in
+   app.js for the actual skyline/river/bridge markup). Motion is slow
+   and each element runs on its own independent cycle (randomized
+   negative animation-delay set per-element in JS) so it reads as
+   ambient atmosphere rather than something competing for attention with
+   the selection-pulse/hover-lift effects from the Motion pass. */
+.city-bg {
+  pointer-events: none;
+}
+
+.city-window {
+  animation: city-twinkle 5s ease-in-out infinite;
+}
+
+.city-light-streak {
+  animation: city-shimmer 4.5s ease-in-out infinite;
+}
+
+.city-bridge-light-core {
+  animation: city-bridge-glow 3.5s ease-in-out infinite;
+}
+
+.city-bridge-light-halo {
+  animation: city-bridge-glow 3.5s ease-in-out infinite;
+  opacity: 0.35;
+}
+
+.city-river-flow {
+  animation: city-river-flow 4s linear infinite;
+}
+
+@keyframes city-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes city-shimmer {
+  0%, 100% { opacity: 0.12; }
+  50% { opacity: 0.42; }
+}
+
+@keyframes city-bridge-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes city-river-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -46; }
+}
+
+/* respects the OS-level "reduce motion" accessibility setting, same
+   spirit as disabling autoplay/parallax elsewhere - the city elements
+   still show, they just hold still instead of animating. */
+@media (prefers-reduced-motion: reduce) {
+  .city-window,
+  .city-light-streak,
+  .city-bridge-light-core,
+  .city-bridge-light-halo,
+  .city-river-flow {
+    animation: none;
+  }
+}
+
 .line-path {
   fill: none;
   stroke-width: 8;
@@ -804,6 +869,15 @@ header h1 {
 
   body {
     padding: 1.25rem 1rem;
+  }
+
+  /* 2026-08-05: the city background is full-bleed decoration - on a
+     phone screen where April's already asked for the map itself to feel
+     bigger and less cluttered, ~150 extra building/window/light elements
+     is the wrong trade. Hiding it keeps mobile lean; the plain light-blue
+     .map-background fill underneath still shows. */
+  .city-bg {
+    display: none;
   }
 
   header h1 {

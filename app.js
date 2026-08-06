@@ -780,35 +780,37 @@ function buildCityBuilding(rnd, x, y, w, h, roofStyle) {
   // front face (lit) + a narrower side face (darker, unlit) skewed off
   // the right edge - the cheap "isometric box" trick that makes a plain
   // rectangle read as a building corner instead of a flat cutout
-  g.appendChild(svgEl("rect", { x: x, y: y, width: w - sideW, height: h, fill: "#a9c6e3" }));
+  // 2026-08-05: dawn palette - muted mauve/pink instead of dusk blue, per
+  // April's "dawn effect" pick over the earlier blue-dusk mood.
+  g.appendChild(svgEl("rect", { x: x, y: y, width: w - sideW, height: h, fill: "#c9a3ab" }));
   var fx = x + (w - sideW);
   var sidePts = [
     [fx, y], [fx + sideW, y - skew * 0.15],
     [fx + sideW, y + h - skew * 0.15], [fx, y + h]
   ].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
-  g.appendChild(svgEl("polygon", { points: sidePts, fill: "#6f8bad" }));
+  g.appendChild(svgEl("polygon", { points: sidePts, fill: "#8f6b73" }));
 
   // roofline variety (flat/antenna/setback/pointed) - real skylines are
   // never uniform rectangles, and this alone does a lot to sell "city"
   var roofW = w - sideW;
   if (roofStyle === "antenna") {
     var ax = x + roofW * 0.5;
-    g.appendChild(svgEl("line", { x1: ax, y1: y - 18, x2: ax, y2: y, stroke: "#6f8bad", "stroke-width": 1.6 }));
+    g.appendChild(svgEl("line", { x1: ax, y1: y - 18, x2: ax, y2: y, stroke: "#8f6b73", "stroke-width": 1.6 }));
     g.appendChild(svgEl("circle", { cx: ax, cy: y - 18, r: 2, fill: "#ff8a80", opacity: 0.85 }));
   } else if (roofStyle === "setback") {
     var sw = roofW * 0.55, sh = h * 0.18;
     var sx = x + (roofW - sw) / 2;
-    g.appendChild(svgEl("rect", { x: sx, y: y - sh, width: sw * 0.72, height: sh, fill: "#a9c6e3" }));
+    g.appendChild(svgEl("rect", { x: sx, y: y - sh, width: sw * 0.72, height: sh, fill: "#c9a3ab" }));
     var setbackPts = [
       [sx + sw * 0.72, y - sh], [sx + sw, y - sh - skew * 0.1],
       [sx + sw, y - skew * 0.1], [sx + sw * 0.72, y]
     ].map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
-    g.appendChild(svgEl("polygon", { points: setbackPts, fill: "#6f8bad" }));
+    g.appendChild(svgEl("polygon", { points: setbackPts, fill: "#8f6b73" }));
   } else if (roofStyle === "pointed") {
     var apex = x + roofW * 0.5;
     var peakPts = [[x, y], [apex, y - 22], [x + roofW, y]]
       .map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
-    g.appendChild(svgEl("polygon", { points: peakPts, fill: "#a9c6e3" }));
+    g.appendChild(svgEl("polygon", { points: peakPts, fill: "#c9a3ab" }));
   }
 
   // windows on the front face only, each with its own randomized
@@ -840,13 +842,41 @@ function buildCityBackground(svg, vbParts) {
   var rnd = seededRandom(23);
 
   var defs = svgEl("defs", {});
+
+  // 2026-08-05: dawn palette (April picked "dawn" over the earlier blue-
+  // dusk mood after previewing both dawn and a more saturated sunrise
+  // variant) - a soft blue-to-pink-to-peach-to-cream sky wash, a low sun
+  // near the horizon, and a pink/orange river instead of blue. Kept light
+  // enough overall that the original dark label/text colors stay legible
+  // with no separate text-color overrides needed, unlike a true night mode.
+  var skyGrad = svgEl("linearGradient", { id: "city-sky-grad", x1: 0, y1: 0, x2: 0.3, y2: 1 });
+  skyGrad.appendChild(svgEl("stop", { offset: "0%", "stop-color": "#aecbe0" }));
+  skyGrad.appendChild(svgEl("stop", { offset: "38%", "stop-color": "#eecfd0" }));
+  skyGrad.appendChild(svgEl("stop", { offset: "68%", "stop-color": "#f8dcb8" }));
+  skyGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#fdf0dc" }));
+  defs.appendChild(skyGrad);
+
   var riverGrad = svgEl("linearGradient", { id: "city-river-grad", x1: 0, y1: 0, x2: 0, y2: 1 });
-  riverGrad.appendChild(svgEl("stop", { offset: "0%", "stop-color": "#8fc2e3" }));
-  riverGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#bfe0f2" }));
+  riverGrad.appendChild(svgEl("stop", { offset: "0%", "stop-color": "#e8a9a0" }));
+  riverGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#f8cf9a" }));
   defs.appendChild(riverGrad);
+
+  var sunGrad = svgEl("radialGradient", { id: "city-sun-grad", cx: "50%", cy: "50%", r: "50%" });
+  sunGrad.appendChild(svgEl("stop", { offset: "0%", "stop-color": "#fff8e8" }));
+  sunGrad.appendChild(svgEl("stop", { offset: "50%", "stop-color": "#ffd9a0" }));
+  sunGrad.appendChild(svgEl("stop", { offset: "100%", "stop-color": "#ffb877", "stop-opacity": 0 }));
+  defs.appendChild(sunGrad);
+
   svg.appendChild(defs);
 
   var g = svgEl("g", { class: "city-bg" });
+
+  // low sun near the horizon with a soft glow halo - no rays (that's the
+  // more dramatic "sunrise" variant April previewed but didn't pick), just
+  // a gentle disc + glow, which is what keeps this reading as "dawn" and
+  // not "night" or "sunrise"
+  g.appendChild(svgEl("circle", { cx: VB.x0 + VB.w * 0.78, cy: y1 - 40, r: 170, fill: "url(#city-sun-grad)" }));
+  g.appendChild(svgEl("circle", { cx: VB.x0 + VB.w * 0.78, cy: y1 - 40, r: 40, fill: "#fff3d6", opacity: 0.9 }));
 
   // buildings scattered full-bleed across the whole canvas (not just the
   // edges) at low density/opacity, so the skyline sits behind every line
@@ -900,7 +930,7 @@ function buildCityBackground(svg, vbParts) {
   // April's "too slow and subtle" feedback - bigger, brighter segments
   // read as an actual current instead of an occasional flicker.
   g.appendChild(svgEl("path", {
-    d: riverD, stroke: "#f4fbff", "stroke-width": 12, fill: "none", opacity: 0.55,
+    d: riverD, stroke: "#fff3d6", "stroke-width": 12, fill: "none", opacity: 0.55,
     "stroke-linecap": "round", "stroke-dasharray": "18 28",
     class: "city-river-flow", transform: "translate(0,-18)"
   }));
@@ -959,7 +989,7 @@ function buildMap(app) {
   // buildCityBackground below for the skyline/river/bridges themselves.
   svg.appendChild(svgEl("rect", {
     x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3],
-    fill: "#eef5fb", class: "map-background"
+    fill: "url(#city-sky-grad)", class: "map-background"
   }));
   buildCityBackground(svg, vbParts);
 

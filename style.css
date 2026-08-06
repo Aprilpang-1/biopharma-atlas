@@ -300,44 +300,48 @@ header h1 {
 }
 
 .city-window {
-  animation: city-twinkle 5s ease-in-out infinite;
+  animation: city-twinkle 2.2s ease-in-out infinite;
 }
 
 .city-light-streak {
-  animation: city-shimmer 4.5s ease-in-out infinite;
+  animation: city-shimmer 2s ease-in-out infinite;
 }
 
 .city-bridge-light-core {
-  animation: city-bridge-glow 3.5s ease-in-out infinite;
+  animation: city-bridge-glow 1.6s ease-in-out infinite;
 }
 
 .city-bridge-light-halo {
-  animation: city-bridge-glow 3.5s ease-in-out infinite;
+  animation: city-bridge-glow 1.6s ease-in-out infinite;
   opacity: 0.35;
 }
 
+/* 2026-08-05: sped up + made more visually obvious per April's "too
+   slow and subtle" feedback - both the cycle length (4s -> 1.4s) and the
+   dash pattern itself (a short bright dash on a long gap read as barely
+   a flicker; a longer, more opaque dash reads as an actual current). */
 .city-river-flow {
-  animation: city-river-flow 4s linear infinite;
+  animation: city-river-flow 1.4s linear infinite;
 }
 
 @keyframes city-twinkle {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.75; }
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.95; }
 }
 
 @keyframes city-shimmer {
-  0%, 100% { opacity: 0.12; }
-  50% { opacity: 0.42; }
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.65; }
 }
 
 @keyframes city-bridge-glow {
-  0%, 100% { opacity: 0.55; }
+  0%, 100% { opacity: 0.45; }
   50% { opacity: 1; }
 }
 
 @keyframes city-river-flow {
   from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -46; }
+  to { stroke-dashoffset: -92; }
 }
 
 /* respects the OS-level "reduce motion" accessibility setting, same

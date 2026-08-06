@@ -895,10 +895,13 @@ function buildCityBackground(svg, vbParts) {
   // flowing current: a dashed highlight traced along the same river
   // path, animated via stroke-dashoffset (see .city-river-flow keyframe
   // in style.css) - the twinkling light streaks below fade in place,
-  // this is what actually reads as "water moving downstream".
+  // this is what actually reads as "water moving downstream". Dash size
+  // and opacity bumped up (was a sparse 4px blip on a 42px gap) per
+  // April's "too slow and subtle" feedback - bigger, brighter segments
+  // read as an actual current instead of an occasional flicker.
   g.appendChild(svgEl("path", {
-    d: riverD, stroke: "#eaf6ff", "stroke-width": 10, fill: "none", opacity: 0.35,
-    "stroke-linecap": "round", "stroke-dasharray": "4 42",
+    d: riverD, stroke: "#f4fbff", "stroke-width": 12, fill: "none", opacity: 0.55,
+    "stroke-linecap": "round", "stroke-dasharray": "18 28",
     class: "city-river-flow", transform: "translate(0,-18)"
   }));
 

@@ -1634,6 +1634,41 @@ function selectStation(modId) {
   state.comparing = false;
   applyFocusState();
   renderDetailPanel();
+  spawnSelectPulse(modId);
+}
+
+// 2026-08-05 (motion pass): a brief expanding-and-fading ring drawn on top
+// of the clicked station's dot, so selecting a station reads as an active
+// event rather than a silent class-toggle. Works for both plain circular
+// dots (cx/cy/r) and the rect-based interchange pills (x/y/width/height) by
+// branching on tagName - matches the same branch used elsewhere (e.g. the
+// coordinate-extraction fix in the depth-shadow work) since interchange
+// markers are <rect> pills, not <circle> dots. The ring removes itself via
+// 'animationend' so repeated clicks don't pile up stray elements.
+function spawnSelectPulse(modId) {
+  var svg = document.getElementById("subway-map");
+  if (!svg) return;
+  var dot = svg.querySelector('[data-station="' + modId + '"]');
+  if (!dot) return;
+  var cx, cy, r;
+  if (dot.tagName.toLowerCase() === "rect") {
+    var x = parseFloat(dot.getAttribute("x")) || 0;
+    var y = parseFloat(dot.getAttribute("y")) || 0;
+    var w = parseFloat(dot.getAttribute("width")) || 0;
+    var h = parseFloat(dot.getAttribute("height")) || 0;
+    cx = x + w / 2;
+    cy = y + h / 2;
+    r = Math.max(w, h) / 2;
+  } else {
+    cx = parseFloat(dot.getAttribute("cx")) || 0;
+    cy = parseFloat(dot.getAttribute("cy")) || 0;
+    r = parseFloat(dot.getAttribute("r")) || 10;
+  }
+  var ring = svgEl("circle", { cx: cx, cy: cy, r: r, class: "select-pulse" });
+  svg.appendChild(ring);
+  ring.addEventListener("animationend", function () {
+    if (ring.parentNode) ring.parentNode.removeChild(ring);
+  });
 }
 
 function esc(str) {

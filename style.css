@@ -63,11 +63,24 @@ header {
   background: #fff;
   cursor: pointer;
   margin-right: 0.5rem;
+  /* 2026-08-05 (motion pass 2/3): same hover-lift/active-press pattern
+     applied to every clickable button on the page (see .pin-btn,
+     .layer3-buttons button, .back-inline below) - a tiny bit of physical
+     "give" is what makes buttons read as buttons rather than flat labels. */
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 #back-btn:hover,
 #compare-btn:hover {
   background: #f4f4f4;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+#back-btn:active,
+#compare-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
 }
 
 #compare-btn {
@@ -96,10 +109,18 @@ header {
   background: #fff;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pin-btn:hover {
   background: #f4f4f4;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.pin-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
 }
 
 .pin-btn.pinned {
@@ -268,12 +289,23 @@ header {
 
 .area-badge {
   cursor: pointer;
-  transition: opacity 0.3s ease, fill 0.3s ease;
+  transition: opacity 0.3s ease, fill 0.3s ease, transform 0.15s ease, filter 0.15s ease;
   /* 2026-08-05 (depth pass 1/3 - see style.css history for motion/polish
      passes that follow): badges get the strongest shadow of the three
      dot-family shadows below since they're the biggest, most prominent
      markers on the map. */
   filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.45));
+  /* 2026-08-05 (motion pass 2/3): scaling needs a shape-relative pivot
+     (the default SVG origin is the viewBox's 0,0, which would swing the
+     badge sideways instead of growing it in place) - fill-box + center
+     makes the badge scale around its own middle like a normal DOM element. */
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.area-badge:hover {
+  transform: scale(1.12);
+  filter: drop-shadow(3px 5px 6px rgba(0, 0, 0, 0.55));
 }
 
 .area-badge-text {
@@ -313,6 +345,13 @@ header {
 .legend-box-swatch {
   cursor: pointer;
   pointer-events: all;
+  transition: transform 0.15s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.legend-box-swatch:hover {
+  transform: scale(1.15);
 }
 
 .legend-box-swatch-text {
@@ -327,6 +366,11 @@ header {
   fill: #333;
   cursor: pointer;
   pointer-events: all;
+  transition: opacity 0.15s ease;
+}
+
+.legend-box-name:hover {
+  opacity: 0.6;
 }
 
 #map-legend {
@@ -378,11 +422,22 @@ header {
 
 .station-dot {
   cursor: pointer;
-  transition: opacity 0.3s ease, r 0.15s ease;
+  transition: opacity 0.3s ease, r 0.15s ease, filter 0.15s ease;
   /* 2026-08-05: regular (single-line) dots get the lightest shadow of the
      three - they're the smallest, most numerous markers, so a heavy
      shadow on all of them would look noisy rather than "lifted". */
   filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+/* 2026-08-05 (motion pass 2/3): hover already grows the dot's radius (see
+   the two rules below) - adding a deeper shadow alongside that growth
+   sells the "lifting off the map" feel instead of just "getting bigger". */
+.station-dot:not(.interchange-dot):hover {
+  filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.5));
+}
+
+.interchange-dot:hover {
+  filter: drop-shadow(3px 5px 6px rgba(0, 0, 0, 0.5));
 }
 
 .tone-dot {
@@ -424,6 +479,34 @@ header {
 
 .interchange-dot.selected {
   r: 14px;
+}
+
+/* 2026-08-05 (motion pass 2/3): a one-shot expanding-and-fading ring drawn
+   over a just-clicked station (spawned in JS by spawnSelectPulse, called
+   from selectStation) - reads as "your click landed" instead of the dot
+   just silently changing style. Uses the same #111 as the .selected
+   outline above so it feels like part of the same selection moment rather
+   than a separate, disconnected effect. forwards + JS removal on
+   animationend keeps it from leaving stray elements or replaying. */
+.select-pulse {
+  fill: none;
+  stroke: #111;
+  stroke-width: 3;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse-ring 0.6s ease-out forwards;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
 }
 
 .interchange-dot {
@@ -543,10 +626,18 @@ header {
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .layer3-buttons button:hover {
   background: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.layer3-buttons button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
 }
 
 .drug-list {
@@ -639,10 +730,18 @@ header {
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .back-inline:hover {
   background: #f4f4f4;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.back-inline:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
 }
 
 @media (max-width: 600px) {

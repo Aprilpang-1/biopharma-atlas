@@ -42,11 +42,26 @@ header,
 
 header {
   margin-bottom: 1rem;
+  /* 2026-08-05 (polish pass 3/3): a hairline rule under the header, plus
+     giving the title its own type treatment below, is what separates
+     "a heading floating on a page" from "an app with a defined chrome" -
+     the same visual grammar as a real product's top bar. */
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #ececec;
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #17202a;
 }
 
 .subtitle {
-  color: #666;
+  color: #667;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 #toolbar {
@@ -57,12 +72,20 @@ header {
 #back-btn,
 #compare-btn {
   font-size: 0.85rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  /* 2026-08-05 (polish pass 3/3): pill shape (999px) replaces the boxy
+     6px-radius rectangle on every button on the page (see .pin-btn,
+     .layer3-buttons button, .back-inline below) - rounder chrome plus the
+     resting shadow below is what gives buttons weight even before you
+     hover them, instead of only looking "real" once the Motion-pass hover
+     state kicks in. */
+  border-radius: 999px;
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
   margin-right: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   /* 2026-08-05 (motion pass 2/3): same hover-lift/active-press pattern
      applied to every clickable button on the page (see .pin-btn,
      .layer3-buttons button, .back-inline below) - a tiny bit of physical
@@ -103,12 +126,14 @@ header {
 
 .pin-btn {
   font-size: 0.8rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -150,14 +175,17 @@ header {
 
 .compare-card {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
   padding: 1rem 1.25rem;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
 }
 
 .compare-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
 }
 
 .compare-card h4 {
@@ -196,7 +224,10 @@ header {
 }
 
 #status {
-  color: #666;
+  color: #888;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 2rem 0;
 }
 
 /* #app is the flexible flex child (see body rule above). flex-shrink:1
@@ -555,14 +586,21 @@ header {
 
 #detail-panel {
   margin-top: 1.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #ececec;
+  border-radius: 12px;
   padding: 1rem 1.25rem;
   background: #fafafa;
+  /* 2026-08-05 (polish pass 3/3): a soft ambient shadow reads as "this
+     panel is a raised card" the same way the map's own drop-shadows
+     (Depth pass) do - lighter border alongside it since the shadow now
+     does the work of separating the panel from the page background. */
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
 }
 
 #detail-panel h3 {
   margin: 0 0 0.4rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
 }
 
 #detail-panel p {
@@ -621,11 +659,13 @@ header {
 .layer3-buttons button {
   flex: 1;
   font-size: 0.9rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -693,7 +733,14 @@ header {
 
 .proscons-col h4 {
   margin: 0 0 0.4rem;
-  font-size: 0.85rem;
+  /* 2026-08-05 (polish pass 3/3): shrunk + treated as a small-caps-style
+     label (uppercase, letter-spaced) instead of a same-weight-as-body
+     heading - matches the .drug-area-tag pill treatment already used
+     elsewhere, so "PROS"/"CONS" reads as a section label, not a sentence. */
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .pros-col h4 {
@@ -720,16 +767,22 @@ header {
   background: #eef1f5;
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
+  /* 2026-08-05 (polish pass 3/3): a left accent bar turns this into a
+     callout instead of a plain tinted paragraph - it's the one sentence
+     in the panel meant to be read first, so it should look like it. */
+  border-left: 4px solid #457B9D;
 }
 
 .back-inline {
   margin-top: 0.5rem;
   font-size: 0.85rem;
-  padding: 0.4rem 0.7rem;
-  border-radius: 6px;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
   border: 1px solid #ccc;
   background: #fff;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 

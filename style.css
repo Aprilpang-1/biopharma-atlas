@@ -269,6 +269,11 @@ header {
 .area-badge {
   cursor: pointer;
   transition: opacity 0.3s ease, fill 0.3s ease;
+  /* 2026-08-05 (depth pass 1/3 - see style.css history for motion/polish
+     passes that follow): badges get the strongest shadow of the three
+     dot-family shadows below since they're the biggest, most prominent
+     markers on the map. */
+  filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.45));
 }
 
 .area-badge-text {
@@ -290,6 +295,10 @@ header {
 
 .legend-box {
   pointer-events: none;
+  /* 2026-08-05: the in-map legend is the biggest single shape on the
+     page, so it gets the biggest/softest shadow - reads as a card
+     floating above the map rather than another flat map element. */
+  filter: drop-shadow(4px 6px 8px rgba(0, 0, 0, 0.35));
 }
 
 /* font-size for these three is set inline per-element in
@@ -370,6 +379,10 @@ header {
 .station-dot {
   cursor: pointer;
   transition: opacity 0.3s ease, r 0.15s ease;
+  /* 2026-08-05: regular (single-line) dots get the lightest shadow of the
+     three - they're the smallest, most numerous markers, so a heavy
+     shadow on all of them would look noisy rather than "lifted". */
+  filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.35));
 }
 
 .tone-dot {
@@ -417,6 +430,11 @@ header {
   fill: #fff;
   stroke: #111;
   stroke-width: 4;
+  /* Overrides .station-dot's lighter shadow above (same specificity,
+     later in the file wins) - the multi-line pill markers are bigger
+     and more visually important, so they get a slightly stronger one,
+     matching .area-badge's weight. */
+  filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.4));
 }
 
 .station-label {

@@ -1313,11 +1313,15 @@ function buildMap(app) {
             else if (side === "right") { x2 = pillRight; }
             else if (side === "top") { y1 = pillTop; }
             else if (side === "bottom") { y2 = pillBottom; }
+            // 2026-08-06: April found the blank white pills weird in the
+            // overview - these used to start hidden (class included
+            // "hidden-station") and only appear once that line was
+            // selected. Dropped that class so the dashes render immediately.
             svg.appendChild(svgEl("line", {
               x1: x1, y1: y1, x2: x2, y2: y2,
               stroke: color, "stroke-width": 2, "stroke-dasharray": "1.5,1.5",
               "stroke-linecap": "butt",
-              class: "pill-crossing hidden-station",
+              class: "pill-crossing",
               "data-station-tone": mod.id
             }));
           });
@@ -1330,7 +1334,7 @@ function buildMap(app) {
           cy: pos.y + toneStart + ti * dotSpacing,
           r: 3.5,
           fill: color,
-          class: "tone-dot hidden-station",
+          class: "tone-dot",
           "data-station-tone": mod.id
         });
         svg.appendChild(toneDot);
@@ -1994,13 +1998,15 @@ function applyFocusState() {
     var dot = svg.querySelector('[data-station="' + mod.id + '"]');
     var labels = svg.querySelectorAll('[data-station-label="' + mod.id + '"]');
     var sub = svg.querySelector('[data-station-sublabel="' + mod.id + '"]');
-    var tones = svg.querySelectorAll('[data-station-tone="' + mod.id + '"]');
 
     var isSelected = mod.id === state.selectedStation;
 
     // Interchange pills (square-dot) stay visible on the map at all times,
-    // even in the "All lines" overview with nothing selected - only their
-    // inner tone-dots/crossing-dashes (below) are gated by line selection.
+    // even in the "All lines" overview with nothing selected. Their inner
+    // tone-dots/crossing-dashes used to be gated by line selection too
+    // (hidden until you clicked a line) - April found that made the pills
+    // look like blank white space in the overview, so as of 2026-08-06
+    // those render visible from the start and are no longer toggled here.
     // Plain single-line circles keep the original behavior: hidden until
     // their line is selected.
     if (dot && !dot.classList.contains("square-dot")) {
@@ -2013,9 +2019,9 @@ function applyFocusState() {
     });
     updateLabelLineSpacing(labels);
     if (sub) sub.classList.toggle("hidden-station", !belongsToSelected);
-    tones.forEach(function (el) {
-      el.classList.toggle("hidden-station", !belongsToSelected);
-    });
+    // 2026-08-06: tone-dots/crossing-dashes no longer get hidden-station
+    // toggled back on here - they now stay visible at all times (see the
+    // buildMap comment above), so this loop was removed.
 
     if (dot) dot.classList.toggle("selected", isSelected);
   });

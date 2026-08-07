@@ -629,11 +629,64 @@ function loadAtlas() {
       buildMap(app);
       renderLegend();
       wireToolbar();
+      setupMapAutoFit(app);
     })
     .catch(function (err) {
       statusEl.textContent = "Failed to load content.json: " + err.message;
       statusEl.style.color = "crimson";
     });
+}
+
+// 2026-08-06: April's "keep the whole map on the monitor screen" - CSS
+// alone (width:100%/height:100% + preserveAspectRatio) turned out not to
+// reliably contain-fit an inline root <svg> inside a flex box across
+// browsers (the map was overflowing #app's actual width, forcing the
+// horizontal scrollbar to kick in and cutting off the legend/right edge -
+// exactly what April's last two screenshots showed). This computes the fit
+// in JS instead, using #app's real measured pixel size (no ambiguity),
+// and sets the SVG's width/height as explicit inline px - guaranteed to
+// fit, recalculated live via ResizeObserver whenever #app's size changes
+// for any reason (window resize, detail panel opening/closing, etc).
+function fitMapToContainer(app) {
+  var svg = document.getElementById("subway-map");
+  if (!svg || !app) return;
+  var vbParts = LAYOUT.viewBox.split(" ").map(Number);
+  var vbW = vbParts[2], vbH = vbParts[3];
+  var cw = app.clientWidth;
+  var ch = app.clientHeight;
+  if (!cw || !ch) return;
+
+  // mirrors the existing mobile breakpoint (see the max-width:600px media
+  // query in style.css, which drops min-width to 0 there) - below that,
+  // let the map shrink freely to actually fit the phone's screen; above
+  // it, never shrink narrower than 900px, matching the desktop
+  // min-width - past that point it's meant to pan/scroll, not shrink
+  // into illegibility.
+  var minW = window.innerWidth <= 600 ? 0 : 900;
+
+  var scale = Math.min(cw / vbW, ch / vbH);
+  var w = Math.max(vbW * scale, minW);
+  var h = w * (vbH / vbW);
+
+  svg.style.width = w + "px";
+  svg.style.height = h + "px";
+}
+
+function setupMapAutoFit(app) {
+  fitMapToContainer(app);
+  if (typeof ResizeObserver !== "undefined") {
+    var ro = new ResizeObserver(function () {
+      fitMapToContainer(app);
+    });
+    ro.observe(app);
+  } else {
+    // older-browser fallback - window resize alone misses the
+    // detail-panel-open/close case, but ResizeObserver support is broad
+    // enough (every current major browser) that this is a rare path.
+    window.addEventListener("resize", function () {
+      fitMapToContainer(app);
+    });
+  }
 }
 
 function svgEl(tag, attrs) {

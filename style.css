@@ -271,6 +271,15 @@ header h1 {
   max-height: 100%;
   display: block;
   cursor: grab;
+  /* 2026-08-06: the river and its light streaks are deliberately drawn a
+     bit past the viewBox edges (see riverPathD/light-streak loop in
+     app.js) for a "flows off the frame" look. That overshoot relies on
+     the SVG clipping to its own viewBox - without an explicit overflow
+     rule here that clip isn't guaranteed, and the spill was visible at
+     the two corners the river passes closest to (top-right, bottom-left)
+     once the map got big enough for it to show. This clip is what the
+     overshoot design always assumed; it just wasn't stated explicitly. */
+  overflow: hidden;
   /* 2026-08-05: hands touch gestures on the map entirely to our own
      pinch-zoom/drag-pan JS (setupMapPanning's touch handlers) instead of
      the browser's native pinch-to-zoom-the-page or two-finger scroll -

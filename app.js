@@ -1160,6 +1160,24 @@ function buildMap(app) {
 
   var vbParts = LAYOUT.viewBox.split(" ");
 
+  // 2026-08-06: April reported the river/light-streak overshoot (see
+  // buildCityBackground) still bled past the map edges even after the CSS
+  // overflow:hidden fix on #subway-map - the CSS 'overflow' property's
+  // behavior on a root/outermost <svg> is genuinely inconsistent across
+  // browsers, so relying on it alone wasn't reliable. This is a second,
+  // SVG-native clip that doesn't depend on that CSS behavior at all: a
+  // <clipPath> exactly matching the viewBox rectangle, applied directly to
+  // the root svg via the clip-path attribute. Belt-and-suspenders with the
+  // CSS rule, but this one is the one that actually guarantees it.
+  var clipDefs = svgEl("defs", {});
+  var mapClip = svgEl("clipPath", { id: "map-viewbox-clip" });
+  mapClip.appendChild(svgEl("rect", {
+    x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3]
+  }));
+  clipDefs.appendChild(mapClip);
+  svg.appendChild(clipDefs);
+  svg.setAttribute("clip-path", "url(#map-viewbox-clip)");
+
   // 2026-08-05: replaced the "Blueprint Grid" background (2026-08-03,
   // April's chosen Option C) with a full-bleed illustrated city backdrop
   // per April's request to make the map "like a real city map" - see

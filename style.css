@@ -9,7 +9,16 @@
    works by construction on any screen - there's no number to get wrong -
    and only falls back to page scrolling in the rare case where even a
    minimum-size map plus everything else still doesn't fit (see
-   #app's min-height below). */
+   #app's min-height below).
+
+   2026-08-06: that "shrink to fit one screen" behavior is now INTENTIONALLY
+   broken for the map specifically, per April's explicit choice (map fills
+   the full page width; if that makes it taller than one screen, the page
+   scrolls, same as any normal webpage) - see #subway-map's removed
+   max-height and #app's flex-shrink below. The single-screen-fit goal
+   above still describes why body/html are still structured as a 100vh
+   flex column at all (header/toolbar/legend never scroll away from the
+   map awkwardly), just no longer describes the map's own sizing. */
 html {
   height: 100%;
 }
@@ -237,10 +246,7 @@ header h1 {
   padding: 2rem 0;
 }
 
-/* #app is the flexible flex child (see body rule above). flex-shrink:1
-   still lets it shrink below its natural size on short viewports (the
-   explicit floor further down, 220px, keeps it from disappearing
-   entirely) - that part is unchanged from the original scroll fix.
+/* #app is a flex child of body (see body rule above).
 
    2026-08-03: flex-grow changed from 1 to 0. With grow:1, #app used to
    soak up ALL leftover vertical space in the page whenever the detail
@@ -251,14 +257,27 @@ header h1 {
    visibly "jump up" the moment a station was clicked and the detail
    panel appeared and started claiming some of that space. With grow:0,
    #app always hugs the map's natural height, so the legend sits
-   immediately after it whether or not the detail panel is showing. */
+   immediately after it whether or not the detail panel is showing.
+
+   2026-08-06: flex-shrink changed from 1 to 0, and #subway-map's
+   max-height:100% removed (below). Previously #app was the one section
+   allowed to shrink to keep the whole page within one screen (100vh) -
+   given the map's fixed ~1.8:1 aspect ratio, on a wide-but-not-equally-
+   tall monitor that meant the map's WIDTH was silently capped too, since
+   shrinking height at a fixed ratio shrinks width right along with it.
+   April chose "fill the width, let the page scroll" over "stay on one
+   screen" - so #app (and therefore the map) no longer shrinks to fit;
+   it takes its natural width-driven size and the page scrolls
+   vertically if that's taller than one screen, same as any normal
+   webpage. min-height below is now mostly vestigial (nothing shrinks
+   below it anymore) but left in as a defensive floor. */
 #app {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   margin: 0 -1.5rem;
   padding: 0 1.5rem;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 220px;
   display: flex;
   align-items: flex-start;
@@ -268,7 +287,6 @@ header h1 {
   width: 100%;
   min-width: 900px;
   height: auto;
-  max-height: 100%;
   display: block;
   cursor: grab;
   /* 2026-08-06: the river and its light streaks are deliberately drawn a

@@ -16,7 +16,14 @@ html {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  max-width: 1500px;
+  /* 2026-08-06: removed the 1500px cap per April's request - on wide
+     monitors the page was centered with large empty margins on both
+     sides (the map's own width:100% rule was already stretching to fill
+     whatever it was given; the cap was the only thing holding it back).
+     Fully unbounded now, so it grows to fill any screen width. This is a
+     max, not a min - it has no effect on laptop-width screens that were
+     already under 1500px, and the existing 600px mobile breakpoint /
+     #app's horizontal-scroll fallback are untouched. */
   margin: 0 auto;
   padding: 2rem 1.5rem;
   color: #222;

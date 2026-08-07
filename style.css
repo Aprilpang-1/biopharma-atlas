@@ -259,34 +259,41 @@ header h1 {
    #app always hugs the map's natural height, so the legend sits
    immediately after it whether or not the detail panel is showing.
 
-   2026-08-06: flex-shrink changed from 1 to 0, and #subway-map's
-   max-height:100% removed (below). Previously #app was the one section
-   allowed to shrink to keep the whole page within one screen (100vh) -
-   given the map's fixed ~1.8:1 aspect ratio, on a wide-but-not-equally-
-   tall monitor that meant the map's WIDTH was silently capped too, since
-   shrinking height at a fixed ratio shrinks width right along with it.
-   April chose "fill the width, let the page scroll" over "stay on one
-   screen" - so #app (and therefore the map) no longer shrinks to fit;
-   it takes its natural width-driven size and the page scrolls
-   vertically if that's taller than one screen, same as any normal
-   webpage. min-height below is now mostly vestigial (nothing shrinks
-   below it anymore) but left in as a defensive floor. */
+   2026-08-06 (round 1): flex-shrink changed from 1 to 0, and
+   #subway-map's max-height:100% removed, to let the map fill the full
+   page width even if that made it taller than one screen (page scroll).
+
+   2026-08-06 (round 2): April reconsidered - she wants the map to keep
+   its aspect ratio AND fill as much of the screen as possible with NO
+   scrolling, i.e. the original single-screen-fit goal, just now against
+   the full (unbounded) page width instead of the old 1500px cap. Back to
+   flex-grow:1 so #app fills 100% of whatever vertical space is left
+   after header/toolbar/legend/detail-panel (a definite height, not just
+   "natural size") - combined with #subway-map's width:100%/height:100%
+   below, the SVG's own default preserveAspectRatio ("xMidYMid meet")
+   scales the map up to touch whichever of width/height is the tighter
+   constraint, centered, with zero distortion and zero overflow. If the
+   screen's proportions don't exactly match the map's ~1.8:1 shape, the
+   leftover space shows as even margins on whichever side has the gap
+   (top/bottom or left/right) - unavoidable for any "contain and center"
+   layout, not a bug. */
 #app {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   margin: 0 -1.5rem;
   padding: 0 1.5rem;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 220px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
 }
 
 #subway-map {
   width: 100%;
   min-width: 900px;
-  height: auto;
+  height: 100%;
   display: block;
   cursor: grab;
   /* 2026-08-06: the river and its light streaks are deliberately drawn a

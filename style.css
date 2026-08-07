@@ -324,6 +324,22 @@ header h1 {
   animation: city-river-flow 1.4s linear infinite;
 }
 
+/* 2026-08-06: the 3 dots share one keyframe (bright for the first 28% of
+   their own cycle, dim the rest) but each has a different animation-delay
+   baked in at build time (base, base+2s, base+4s on the shared 6s loop -
+   see buildTrafficLight in app.js) - that's what makes them visibly take
+   turns instead of all pulsing together like the window twinkle does. */
+.city-traffic-red,
+.city-traffic-yellow,
+.city-traffic-green {
+  animation: city-traffic-cycle 6s ease-in-out infinite;
+}
+
+@keyframes city-traffic-cycle {
+  0%, 28% { opacity: 1; }
+  33%, 100% { opacity: 0.25; }
+}
+
 @keyframes city-twinkle {
   0%, 100% { opacity: 0.25; }
   50% { opacity: 0.95; }
@@ -352,7 +368,10 @@ header h1 {
   .city-light-streak,
   .city-bridge-light-core,
   .city-bridge-light-halo,
-  .city-river-flow {
+  .city-river-flow,
+  .city-traffic-red,
+  .city-traffic-yellow,
+  .city-traffic-green {
     animation: none;
   }
 }

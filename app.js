@@ -878,6 +878,24 @@ function buildCityBackground(svg, vbParts) {
   g.appendChild(svgEl("circle", { cx: VB.x0 + VB.w * 0.78, cy: y1 - 40, r: 170, fill: "url(#city-sun-grad)" }));
   g.appendChild(svgEl("circle", { cx: VB.x0 + VB.w * 0.78, cy: y1 - 40, r: 40, fill: "#fff3d6", opacity: 0.9 }));
 
+  // 2026-08-06: two ground-level streets (April's "add a little bit more
+  // trees, or road" request) - gives the skyline a ground plane instead of
+  // just floating buildings. Kept away from the sun corner and the legend
+  // box: roadY sits above the legend's own y-range, roadX sits well left
+  // of it.
+  function addCityRoad(rx1, ry1, rx2, ry2) {
+    g.appendChild(svgEl("line", { x1: rx1, y1: ry1, x2: rx2, y2: ry2, stroke: "#d9c8b8", "stroke-width": 14, opacity: 0.35, "stroke-linecap": "round" }));
+    g.appendChild(svgEl("line", { x1: rx1, y1: ry1, x2: rx2, y2: ry2, stroke: "#fff3d6", "stroke-width": 2, opacity: 0.5, "stroke-dasharray": "10 14", "stroke-linecap": "round" }));
+  }
+  var roadY = VB.y0 + VB.h * 0.55;
+  var roadX = VB.x0 + VB.w * 0.22;
+  addCityRoad(VB.x0 - 40, roadY, x1 + 40, roadY);
+  addCityRoad(roadX, VB.y0 - 40, roadX, y1 + 40);
+  // 2026-08-06 (round 5): third road, at the vertical line April marked
+  // crossing the whole map (x:~1250 - just left of the legend box, which
+  // starts at x:1280, so it doesn't run under it).
+  addCityRoad(1250, VB.y0 - 40, 1250, y1 + 40);
+
   // buildings scattered full-bleed across the whole canvas (not just the
   // edges) at low density/opacity, so the skyline sits behind every line
   // rather than just framing the map
@@ -895,6 +913,107 @@ function buildCityBackground(svg, vbParts) {
       g.appendChild(buildCityBuilding(rnd, bx, by, bw, bh, roof));
     }
   }
+
+  // trees - a muted sage/olive palette that sits quietly behind the mauve
+  // skyline: some lining the two streets (like real street trees), a few
+  // more scattered freely in the open gaps between buildings
+  function buildCityTree(tx, ty, size) {
+    var tg = svgEl("g", { class: "city-tree", opacity: 0.4 });
+    tg.appendChild(svgEl("line", { x1: tx, y1: ty + size * 0.5, x2: tx, y2: ty + size, stroke: "#8a6b52", "stroke-width": size * 0.12 }));
+    tg.appendChild(svgEl("circle", { cx: tx - size * 0.22, cy: ty + size * 0.35, r: size * 0.34, fill: "#93a878" }));
+    tg.appendChild(svgEl("circle", { cx: tx + size * 0.22, cy: ty + size * 0.3, r: size * 0.36, fill: "#a3b789" }));
+    tg.appendChild(svgEl("circle", { cx: tx, cy: ty + size * 0.12, r: size * 0.4, fill: "#b0c496" }));
+    return tg;
+  }
+  function scatterTreesAlong(rx1, ry1, rx2, ry2, count, offsetDist) {
+    var perpX = ry2 - ry1, perpY = -(rx2 - rx1);
+    var plen = Math.sqrt(perpX * perpX + perpY * perpY) || 1;
+    for (var ti = 0; ti < count; ti++) {
+      var tt = rnd();
+      var tx = rx1 + (rx2 - rx1) * tt;
+      var ty = ry1 + (ry2 - ry1) * tt;
+      var side = rnd() > 0.5 ? 1 : -1;
+      var ox = tx + (perpX / plen) * offsetDist * side;
+      var oy = ty + (perpY / plen) * offsetDist * side;
+      g.appendChild(buildCityTree(ox, oy, 16 + rnd() * 10));
+    }
+  }
+  scatterTreesAlong(VB.x0 - 40, roadY, x1 + 40, roadY, 10, 16);
+  scatterTreesAlong(roadX, VB.y0 - 40, roadX, y1 + 40, 8, 16);
+  for (var tfree = 0; tfree < 10; tfree++) {
+    g.appendChild(buildCityTree(VB.x0 + rnd() * VB.w, VB.y0 + rnd() * VB.h, 14 + rnd() * 10));
+  }
+
+  // 2026-08-06: a dedicated park - April asked for "a park with a lot of
+  // trees or plants" but that it not interfere with the actual metro
+  // diagram. Placed in the one large rectangle that's genuinely empty of
+  // every line, station, label and the legend box: the top-right corner
+  // (x:1600-1950, y:100-460) - clear of Infectious Disease's rightmost run
+  // (stops at x:1450), clear of the legend (which starts at y:770), and
+  // clear of the nearby bridge at (1604,40) since the park starts at y:100.
+  // A soft green ground patch sits under a dense mix of trees and smaller
+  // shrub clusters (no trunk, just layered canopy) for variety.
+  function buildCityShrub(sx, sy, size) {
+    var sg = svgEl("g", { class: "city-tree", opacity: 0.4 });
+    sg.appendChild(svgEl("circle", { cx: sx - size * 0.3, cy: sy, r: size * 0.4, fill: "#a3b789" }));
+    sg.appendChild(svgEl("circle", { cx: sx + size * 0.3, cy: sy + size * 0.05, r: size * 0.42, fill: "#93a878" }));
+    sg.appendChild(svgEl("circle", { cx: sx, cy: sy - size * 0.15, r: size * 0.38, fill: "#b0c496" }));
+    return sg;
+  }
+  function addCityPark(cx, cy, rx, ry, count) {
+    g.appendChild(svgEl("ellipse", { cx: cx, cy: cy, rx: rx, ry: ry, fill: "#c3d4a8", opacity: 0.18 }));
+    for (var pi = 0; pi < count; pi++) {
+      var ang = rnd() * Math.PI * 2;
+      var rad = Math.sqrt(rnd());
+      var px = cx + Math.cos(ang) * rx * rad;
+      var py = cy + Math.sin(ang) * ry * rad;
+      if (rnd() > 0.35) {
+        g.appendChild(buildCityTree(px, py, 14 + rnd() * 14));
+      } else {
+        g.appendChild(buildCityShrub(px, py, 10 + rnd() * 8));
+      }
+    }
+  }
+  addCityPark(1775, 280, 175, 180, 30);
+
+  // 2026-08-06: traffic lights, per April's ask. Checked every real line
+  // segment, station, badge and the legend box against candidate points
+  // first (a script-based clearance sweep, not eyeballed) - the two
+  // decorative streets run within a few units of several real lines for
+  // most of their length (they're meant to read as "the roads the metro
+  // runs under", so that's fine at low opacity), but the horizontal
+  // street's far-east stretch (x:1600-1990, near the park, well below the
+  // legend) came back with 150-270 units of clearance from anything real -
+  // by far the safest spot, so the lights go there, right on that road.
+  // 2026-08-06 (round 2): April asked for these bigger, and for the lights
+  // to actually switch between colors rather than sit static. Scaled the
+  // whole fixture up ~1.7x, and gave each of the 3 dots its own class +
+  // a staggered animation-delay (base, base+2s, base+4s) on the same 6s
+  // opacity-pulse keyframe (see .city-traffic-red/-yellow/-green in
+  // style.css) - each dot brightens in turn for a 2s window, so the two
+  // fixtures visibly cycle red -> yellow -> green -> repeat, each on its
+  // own independent random phase (like the window twinkle) so the two
+  // lights aren't in lockstep with each other.
+  function buildTrafficLight(tx, ty) {
+    var lg = svgEl("g", { class: "city-traffic-light", opacity: 0.6 });
+    var base = rnd() * 6;
+    lg.appendChild(svgEl("line", { x1: tx, y1: ty, x2: tx, y2: ty - 64, stroke: "#5a5a5a", "stroke-width": 3 }));
+    lg.appendChild(svgEl("rect", { x: tx - 7, y: ty - 90, width: 14, height: 29, rx: 3, fill: "#3a3a3a" }));
+    lg.appendChild(svgEl("circle", { cx: tx, cy: ty - 84, r: 2.9, fill: "#ff6b5e", class: "city-traffic-red", style: "animation-delay:-" + base.toFixed(2) + "s" }));
+    lg.appendChild(svgEl("circle", { cx: tx, cy: ty - 75, r: 2.9, fill: "#ffd166", class: "city-traffic-yellow", style: "animation-delay:-" + (base + 2).toFixed(2) + "s" }));
+    lg.appendChild(svgEl("circle", { cx: tx, cy: ty - 66, r: 2.9, fill: "#8fd694", class: "city-traffic-green", style: "animation-delay:-" + (base + 4).toFixed(2) + "s" }));
+    return lg;
+  }
+  // 2026-08-06 (round 5): April marked the exact spot on a screenshot -
+  // just right of and below the SGLT2 dot, roughly (-22,505) once mapped
+  // from the image back into SVG coordinates. Swept the whole fixture's
+  // footprint (base through the top of the housing) around that marked
+  // point: at the exact mark, the housing top comes within 1 unit of the
+  // Metabolic line (basically touching it). (40, 560) - about 60 units
+  // right/below her mark, same open pocket - is the closest point where
+  // the entire fixture clears every real line by 56+ units.
+  g.appendChild(buildTrafficLight(1700, roadY));
+  g.appendChild(buildTrafficLight(40, 560));
 
   // river sweeps diagonally through the whole canvas, under the lines -
   // routed through the layout's more open corners rather than through
@@ -964,15 +1083,73 @@ function buildCityBackground(svg, vbParts) {
     g.appendChild(svgEl("line", { x1: bx1, y1: by1, x2: bx2, y2: by2, stroke: "#5c7a95", "stroke-width": 9, opacity: 0.9 }));
     g.appendChild(svgEl("line", { x1: cx - nx * 10, y1: cy - ny * 10 - 30, x2: cx - nx * 10, y2: cy - ny * 10 + 30, stroke: "#3f5a75", "stroke-width": 5, opacity: 0.9 }));
     g.appendChild(svgEl("line", { x1: cx + nx * 10, y1: cy + ny * 10 - 30, x2: cx + nx * 10, y2: cy + ny * 10 + 30, stroke: "#3f5a75", "stroke-width": 5, opacity: 0.9 }));
-    for (var t2 = -half + 6; t2 <= half - 6; t2 += 13) {
+    // 2026-08-06: April found this too dense up close (~9 light pairs per
+    // bridge, even though 3 bridges together read fine at full-map scale) -
+    // spaced them out (13 -> 36) for ~4 per bridge, more like real bridge
+    // lamp posts than a solid string of bulbs.
+    for (var t2 = -half + 6; t2 <= half - 6; t2 += 36) {
       var lx = cx + dx * t2, ly = cy + dy * t2;
       var delayB = (-rnd() * 3.5).toFixed(2) + "s";
       g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 7, fill: "#ffb84d", class: "city-bridge-light-halo", style: "animation-delay:" + delayB }));
       g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 3.2, fill: "#ffcf7a", class: "city-bridge-light-core", style: "animation-delay:" + delayB }));
     }
   }
+  // 2026-08-06: April asked for the middle bridge to look different from
+  // the other two - the two outer bridges stay the simple beam-with-piers
+  // style above; this one is a suspension bridge instead: two tall towers
+  // set in from the ends, a sagging main cable running anchor -> tower ->
+  // mid-span dip -> tower -> anchor, and thin vertical hangers dropping
+  // from the cable to the deck between the towers. Same deck-light spacing
+  // as the other two (36 units) so the density stays consistent.
+  function addSuspensionBridge(cx, cy, angleDeg, span) {
+    var rad = (angleDeg * Math.PI) / 180;
+    var dx = Math.cos(rad), dy = Math.sin(rad);
+    var half = span / 2;
+    var bx1 = cx - dx * half, by1 = cy - dy * half;
+    var bx2 = cx + dx * half, by2 = cy + dy * half;
+    var nx = -dy, ny = dx;
+
+    g.appendChild(svgEl("line", { x1: bx1, y1: by1, x2: bx2, y2: by2, stroke: "#5c7a95", "stroke-width": 9, opacity: 0.9 }));
+
+    var towerT = half * 0.55;
+    var towerTops = [-towerT, towerT].map(function (t) {
+      // 2026-08-06: lengthened the below-deck leg (12 -> 35) so each tower
+      // visibly "stands" under the bridge instead of just barely poking
+      // past the deck line - checked the new pier-bottom points against
+      // every real line first (19.6/37.6 units clear of Rare Disease, the
+      // nearest thing either way).
+      var tx = cx + dx * t - nx * 10, ty = cy + dy * t - ny * 10;
+      g.appendChild(svgEl("line", { x1: tx, y1: ty - 55, x2: tx, y2: ty + 35, stroke: "#3f5a75", "stroke-width": 5, opacity: 0.9 }));
+      g.appendChild(svgEl("circle", { cx: tx, cy: ty - 55, r: 3, fill: "#ffcf7a", opacity: 0.8 }));
+      return { x: tx, y: ty - 55 };
+    });
+    var anchor1 = { x: bx1, y: by1 }, anchor2 = { x: bx2, y: by2 };
+    var midDip = { x: cx - nx * 10, y: cy - ny * 10 + 18 };
+    var cablePath =
+      "M " + anchor1.x + "," + anchor1.y +
+      " Q " + (anchor1.x * 0.35 + towerTops[0].x * 0.65) + "," + (anchor1.y * 0.35 + towerTops[0].y * 0.65) + " " + towerTops[0].x + "," + towerTops[0].y +
+      " Q " + ((towerTops[0].x + midDip.x) / 2) + "," + ((towerTops[0].y + midDip.y) / 2 + 12) + " " + midDip.x + "," + midDip.y +
+      " Q " + ((midDip.x + towerTops[1].x) / 2) + "," + ((midDip.y + towerTops[1].y) / 2 + 12) + " " + towerTops[1].x + "," + towerTops[1].y +
+      " Q " + (anchor2.x * 0.35 + towerTops[1].x * 0.65) + "," + (anchor2.y * 0.35 + towerTops[1].y * 0.65) + " " + anchor2.x + "," + anchor2.y;
+    g.appendChild(svgEl("path", { d: cablePath, stroke: "#a88b7a", "stroke-width": 2, fill: "none", opacity: 0.85 }));
+
+    for (var ht = -towerT + 15; ht <= towerT - 15; ht += 15) {
+      var hx = cx + dx * ht, hy = cy + dy * ht;
+      var frac = Math.abs(ht) / towerT;
+      var cableY = hy - (55 * (1 - frac) + 18 * frac) * 0.6;
+      g.appendChild(svgEl("line", { x1: hx, y1: cableY, x2: hx, y2: hy, stroke: "#a88b7a", "stroke-width": 1, opacity: 0.6 }));
+    }
+
+    for (var t2 = -half + 6; t2 <= half - 6; t2 += 36) {
+      var lx = cx + dx * t2, ly = cy + dy * t2;
+      var delayB = (-rnd() * 3.5).toFixed(2) + "s";
+      g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 7, fill: "#ffb84d", class: "city-bridge-light-halo", style: "animation-delay:" + delayB }));
+      g.appendChild(svgEl("circle", { cx: lx, cy: ly, r: 3.2, fill: "#ffcf7a", class: "city-bridge-light-core", style: "animation-delay:" + delayB }));
+    }
+  }
+
   addBridge(30, 804, 60, 120);
-  addBridge(865, 405, 60, 120);
+  addSuspensionBridge(865, 405, 60, 120);
   addBridge(1604, 40, 60, 120);
 
   svg.appendChild(g);

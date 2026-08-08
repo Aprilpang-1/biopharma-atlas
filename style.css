@@ -344,6 +344,16 @@ header h1 {
   animation: city-twinkle 2.2s ease-in-out infinite;
 }
 
+/* 2026-08-07: soft glow behind warm/lit windows only (see city-windows
+   group in buildCityBuilding, app.js) - same core+halo layering as the
+   bridge lights just below, blurred via a cheap SVG filter rather than a
+   second flat rect so it actually reads as light bleeding outward. */
+.city-window-halo {
+  animation: city-twinkle 2.2s ease-in-out infinite;
+  opacity: 0.5;
+  filter: blur(1.5px);
+}
+
 .city-light-streak {
   animation: city-shimmer 2s ease-in-out infinite;
 }

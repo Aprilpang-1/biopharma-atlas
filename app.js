@@ -826,7 +826,16 @@ function seededRandom(seed) {
 }
 
 function buildCityBuilding(rnd, x, y, w, h, roofStyle) {
+  // 2026-08-07: windows now live in their own un-dimmed group (see the
+  // "windows" g below, returned alongside this one and appended as a
+  // sibling in buildCityBackground) rather than as children of `g`. `g`
+  // carries opacity:0.4 for the building silhouette itself - nesting the
+  // windows inside it capped their own twinkle (up to 0.95) at an
+  // effective ~0.38, which read as barely-there. Splitting them out lets
+  // the lit windows read at full brightness against the still-muted
+  // building fronts, per April's "make the building lights more obvious".
   var g = svgEl("g", { class: "city-building", opacity: 0.4 });
+  var windows = svgEl("g", { class: "city-windows" });
   var sideW = w * 0.28;
   var skew = sideW * 0.55;
 
@@ -868,7 +877,11 @@ function buildCityBuilding(rnd, x, y, w, h, roofStyle) {
 
   // windows on the front face only, each with its own randomized
   // (negative) animation-delay so the twinkle keyframe (style.css)
-  // doesn't sync every window to the same beat
+  // doesn't sync every window to the same beat. Sized up from the
+  // original 1.8x2.6 and, for warm (lit) windows, given a soft halo
+  // rect behind them - same layered-glow trick as the bridge lights
+  // (city-bridge-light-core/-halo) - so they read as actually glowing
+  // rather than just being a bigger flat square.
   var frontW = w * 0.72;
   var rows = Math.max(2, Math.floor(h / 9));
   var cols = Math.max(1, Math.floor(frontW / 7));
@@ -879,14 +892,21 @@ function buildCityBuilding(rnd, x, y, w, h, roofStyle) {
       var wy = y + r * (h / rows);
       var warm = rnd() > 0.35;
       var delay = (-rnd() * 5).toFixed(2) + "s";
-      g.appendChild(svgEl("rect", {
-        x: wx, y: wy, width: 1.8, height: 2.6,
+      if (warm) {
+        windows.appendChild(svgEl("rect", {
+          x: wx - 1.1, y: wy - 1.1, width: 4.6, height: 5.4, rx: 1,
+          fill: "#ffcf7a", class: "city-window-halo",
+          style: "animation-delay:" + delay
+        }));
+      }
+      windows.appendChild(svgEl("rect", {
+        x: wx, y: wy, width: 2.4, height: 3.4,
         fill: warm ? "#ffe3ad" : "#ffffff", class: "city-window",
         style: "animation-delay:" + delay
       }));
     }
   }
-  return g;
+  return [g, windows];
 }
 
 function buildCityBackground(svg, vbParts) {
@@ -963,7 +983,9 @@ function buildCityBackground(svg, vbParts) {
       var bx = VB.x0 + c * cw + (cw - bw) * rnd();
       var by = VB.y0 + r * ch + (ch - bh) * rnd();
       var roof = roofs[Math.floor(rnd() * roofs.length)];
-      g.appendChild(buildCityBuilding(rnd, bx, by, bw, bh, roof));
+      var built = buildCityBuilding(rnd, bx, by, bw, bh, roof);
+      g.appendChild(built[0]);
+      g.appendChild(built[1]);
     }
   }
 

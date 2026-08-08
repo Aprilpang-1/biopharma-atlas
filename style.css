@@ -945,14 +945,10 @@ header h1 {
     padding: 1.25rem 1rem;
   }
 
-  /* 2026-08-05: the city background is full-bleed decoration - on a
-     phone screen where April's already asked for the map itself to feel
-     bigger and less cluttered, ~150 extra building/window/light elements
-     is the wrong trade. Hiding it keeps mobile lean; the plain light-blue
-     .map-background fill underneath still shows. */
-  .city-bg {
-    display: none;
-  }
+  /* 2026-08-05: originally hidden here on phone widths (~150 extra
+     building/window/light elements judged too cluttered for a small
+     screen). 2026-08-07: April asked to turn it back on and try it - see
+     the .city-bg rule further up (no display:none override anymore). */
 
   header h1 {
     font-size: 1.5rem;

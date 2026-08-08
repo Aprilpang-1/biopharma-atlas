@@ -1965,6 +1965,25 @@ function computeLineZoomViewBox(areaId) {
     h *= scale;
   }
 
+  // Keep the zoomed box inside the full map's own bounds - a line whose
+  // stations hug one edge (e.g. Cardiovascular, anchored along the far
+  // left) pads/aspect-corrects to a box whose center is still near that
+  // edge, which can push its far side past the map's actual boundary.
+  // Since the background art (river, roads, buildings) is clipped to
+  // exactly the full map's viewBox, a viewBox that reaches past it just
+  // exposes raw, un-clipped art past where the frame border sits - i.e.
+  // April's "river and road streak out of the map" on click-to-zoom. Slide
+  // the box back inside bounds (never resize it - w/h are already correct)
+  // by the smallest amount needed on each axis.
+  var fx0 = full[0], fx1 = full[0] + full[2];
+  var fy0 = full[1], fy1 = full[1] + full[3];
+  var x0 = cx - w / 2, x1 = cx + w / 2;
+  if (x0 < fx0) cx += fx0 - x0;
+  else if (x1 > fx1) cx -= x1 - fx1;
+  var y0 = cy - h / 2, y1 = cy + h / 2;
+  if (y0 < fy0) cy += fy0 - y0;
+  else if (y1 > fy1) cy -= y1 - fy1;
+
   return [cx - w / 2, cy - h / 2, w, h];
 }
 

@@ -1241,9 +1241,22 @@ function buildMap(app) {
   // behavior on a root/outermost <svg> is genuinely inconsistent across
   // browsers, so relying on it alone wasn't reliable. This is a second,
   // SVG-native clip that doesn't depend on that CSS behavior at all: a
-  // <clipPath> exactly matching the viewBox rectangle, applied directly to
-  // the root svg via the clip-path attribute. Belt-and-suspenders with the
-  // CSS rule, but this one is the one that actually guarantees it.
+  // <clipPath> matching the viewBox rectangle.
+  //
+  // 2026-08-07: April saw the sun/road overshoot again on mobile Safari
+  // (turning the city background back on for phones - see the .city-bg
+  // mobile media-query removal - made this visible there for the first
+  // time). Applying clip-path directly to the ROOT <svg> element (as this
+  // did before) is a less-common pattern than clipping a child <g> -
+  // several WebKit/Safari versions have had inconsistent support for
+  // clip-path on the outermost svg specifically. Now every piece of map
+  // content (background, city art, lines, stations, badges, legend) is
+  // appended to an inner <g id="map-content"> instead, with the clip-path
+  // on THAT group - clipping a normal child element is the well-supported,
+  // conventional use of SVG clip-path, so this doesn't depend on the
+  // root-svg edge case at all. Belt-and-suspenders with the CSS
+  // overflow:hidden rule, but this is the mechanism actually guaranteeing
+  // it.
   var clipDefs = svgEl("defs", {});
   var mapClip = svgEl("clipPath", { id: "map-viewbox-clip" });
   mapClip.appendChild(svgEl("rect", {
@@ -1251,17 +1264,18 @@ function buildMap(app) {
   }));
   clipDefs.appendChild(mapClip);
   svg.appendChild(clipDefs);
-  svg.setAttribute("clip-path", "url(#map-viewbox-clip)");
+  var mapContent = svgEl("g", { id: "map-content", "clip-path": "url(#map-viewbox-clip)" });
+  svg.appendChild(mapContent);
 
   // 2026-08-05: replaced the "Blueprint Grid" background (2026-08-03,
   // April's chosen Option C) with a full-bleed illustrated city backdrop
   // per April's request to make the map "like a real city map" - see
   // buildCityBackground below for the skyline/river/bridges themselves.
-  svg.appendChild(svgEl("rect", {
+  mapContent.appendChild(svgEl("rect", {
     x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3],
     fill: "url(#city-sky-grad)", class: "map-background"
   }));
-  buildCityBackground(svg, vbParts);
+  buildCityBackground(mapContent, vbParts);
 
   var stationPoints = buildStationPointSet();
 
@@ -1279,7 +1293,7 @@ function buildMap(app) {
     line.addEventListener("click", function () {
       selectArea(area.id);
     });
-    svg.appendChild(line);
+    mapContent.appendChild(line);
   });
 
   // Only the small color badge + abbreviation appears inline on each
@@ -1303,7 +1317,7 @@ function buildMap(app) {
     badge.addEventListener("click", function () {
       selectArea(area.id);
     });
-    svg.appendChild(badge);
+    mapContent.appendChild(badge);
 
     var badgeText = svgEl("text", {
       x: pos.x,
@@ -1316,7 +1330,7 @@ function buildMap(app) {
     badgeText.addEventListener("click", function () {
       selectArea(area.id);
     });
-    svg.appendChild(badgeText);
+    mapContent.appendChild(badgeText);
   });
 
   state.data.modalities.forEach(function (mod) {
@@ -1367,7 +1381,7 @@ function buildMap(app) {
       e.stopPropagation();
       selectStation(mod.id);
     });
-    svg.appendChild(dot);
+    mapContent.appendChild(dot);
 
     // One small color dot per sharing line, stacked vertically in areas
     // order, marking exactly which lines meet at this station - like the
@@ -1410,7 +1424,7 @@ function buildMap(app) {
             // overview - these used to start hidden (class included
             // "hidden-station") and only appear once that line was
             // selected. Dropped that class so the dashes render immediately.
-            svg.appendChild(svgEl("line", {
+            mapContent.appendChild(svgEl("line", {
               x1: x1, y1: y1, x2: x2, y2: y2,
               stroke: color, "stroke-width": 2, "stroke-dasharray": "1.5,1.5",
               "stroke-linecap": "butt",
@@ -1430,7 +1444,7 @@ function buildMap(app) {
           class: "tone-dot",
           "data-station-tone": mod.id
         });
-        svg.appendChild(toneDot);
+        mapContent.appendChild(toneDot);
       });
     }
 
@@ -1481,7 +1495,7 @@ function buildMap(app) {
         "data-dir": dir
       });
       label.textContent = lineText;
-      svg.appendChild(label);
+      mapContent.appendChild(label);
     });
 
     if (mod.stubOnly) {
@@ -1493,11 +1507,11 @@ function buildMap(app) {
         "data-station-sublabel": mod.id
       });
       sub.textContent = "stub - content pending";
-      svg.appendChild(sub);
+      mapContent.appendChild(sub);
     }
   });
 
-  renderMapLegendBox(svg);
+  renderMapLegendBox(mapContent);
   setupMapPanning(svg);
 
   app.innerHTML = "";
